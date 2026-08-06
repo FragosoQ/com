@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Equipa Comercial · Somengil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+/* ═══ TEMA (claro / escuro) ═══ */
+:root,html[data-theme="dark"]{
+  --blue:#0A84FF; --green:#30D158; --orange:#FF9F0A; --purple:#BF5AF2; --red:#FF453A;
+  --bg:#000000; --surface:#1C1C1E;
+  --fill:rgba(120,120,128,.18); --fill-2:rgba(120,120,128,.32);
+  --text:#FFFFFF; --text-2:rgba(235,235,245,.60); --text-3:rgba(235,235,245,.32);
+  --sep:rgba(84,84,88,.65);
+  --bar:rgba(29,29,31,.82);
+  --glow-a:rgba(10,132,255,.13); --glow-b:rgba(48,209,88,.07);
+  --tile:invert(1) hue-rotate(180deg) saturate(.45) brightness(.82);
+  --shadow:none;
+  --map-bg:#111;
+  color-scheme:dark;
+}
+html[data-theme="light"]{
+  --blue:#007AFF; --green:#34C759; --orange:#FF9500; --purple:#AF52DE; --red:#FF3B30;
+  --bg:#F2F2F7; --surface:#FFFFFF;
+  --fill:rgba(120,120,128,.10); --fill-2:rgba(120,120,128,.22);
+  --text:#000000; --text-2:rgba(60,60,67,.60); --text-3:rgba(60,60,67,.32);
+  --sep:rgba(60,60,67,.20);
+  --bar:rgba(249,249,249,.82);
+  --glow-a:rgba(0,122,255,.10); --glow-b:rgba(52,199,89,.08);
+  --tile:saturate(.55) brightness(1.03) contrast(.96);
+  --shadow:0 1px 3px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.05);
+  --map-bg:#E9E9EC;
+  color-scheme:light;
+}
+:root{--ease:cubic-bezier(.32,.72,0,1)}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Inter',system-ui,sans-serif;
+  letter-spacing:-.015em;-webkit-font-smoothing:antialiased;
+  background:var(--bg);color:var(--text);
+  transition:background .35s ease,color .35s ease;
+}
+button{font:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:8px}
+.ico{width:1em;height:1em;display:block;flex:none}
+.hide{display:none!important}
+html[data-theme="dark"] .on-light{display:none}
+html[data-theme="light"] .on-dark{display:none}
+
+/* ══════════ TV — 16:9 landscape, sem scroll ══════════ */
+html.tv{font-size:clamp(9px,1.02vh,22px)}
+html.tv,html.tv body{height:100%;overflow:hidden}
+html.tv body{
+  background-image:radial-gradient(120rem 60rem at 12% -20%, var(--glow-a), transparent 60%),
+                   radial-gradient(90rem 50rem at 100% 0%, var(--glow-b), transparent 55%);
+}
+.tvroot{height:100vh;height:100dvh;display:flex;flex-direction:column;padding:1.6rem 2rem 1.4rem;gap:1.4rem}
+
+.tvbar{display:flex;align-items:center;gap:1.6rem;flex:none}
+.tvbar .logo{height:2.9rem;width:auto;object-fit:contain}
+.tvbar .logo.on-light{height:3.48rem}   /* logótipo claro +20% */
+.tvbar h1{margin:0;font-size:2.4rem;font-weight:600;letter-spacing:-.03em}
+.tvbar .live{
+  display:flex;align-items:center;gap:.7rem;font-size:1.3rem;font-weight:500;
+  color:var(--text-2);padding:.4rem 1rem .4rem .8rem;background:var(--fill);border-radius:99rem;
+}
+.tvbar .live i{width:.75rem;height:.75rem;border-radius:50%;background:var(--green);display:block;animation:blip 2.4s ease-in-out infinite}
+@keyframes blip{0%,100%{opacity:1}50%{opacity:.25}}
+.tvbar .right{margin-left:auto;text-align:right;line-height:1}
+.tvbar .t{font-size:4.4rem;font-weight:600;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.tvbar .d{font-size:1.35rem;font-weight:500;color:var(--text-2);margin-top:.5rem;text-transform:capitalize}
+.tvbar .theme{
+  width:3.6rem;height:3.6rem;border-radius:50%;background:var(--fill);color:var(--text-2);
+  display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex:none;
+  transition:background .2s,transform .18s var(--ease);
+}
+.tvbar .theme:hover{background:var(--fill-2);color:var(--text)}
+.tvbar .theme:active{transform:scale(.93)}
+
+.tvgrid{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1.15fr;gap:1.2rem}
+
+.col{background:var(--surface);border-radius:1.6rem;display:flex;flex-direction:column;min-height:0;border-top:.35rem solid var(--c);box-shadow:var(--shadow)}
+.col-head{display:flex;align-items:center;gap:.9rem;padding:1.2rem 1.3rem 1rem}
+.col-head .badge{width:2.6rem;height:2.6rem;border-radius:.8rem;background:var(--c);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex:none}
+.col-head h2{margin:0;font-size:1.75rem;font-weight:600;letter-spacing:-.025em}
+.col-head .n{margin-left:auto;font-size:2.6rem;font-weight:600;color:var(--c);letter-spacing:-.04em;font-variant-numeric:tabular-nums;line-height:1}
+.col-body{flex:1;min-height:0;overflow:hidden;padding:0 .8rem .8rem;display:flex;flex-direction:column;gap:.7rem}
+
+.p{
+  position:relative;display:flex;flex-direction:column;gap:1rem;
+  padding:1.4rem 1.4rem 1.2rem;border-radius:1.4rem;background:var(--fill);
+  height:15.6rem;flex:0 1 15.6rem;min-height:5.4rem;overflow:hidden;
+}
+.p .ptop{display:flex;align-items:center;gap:1.2rem;min-width:0}
+.p .av{position:relative;width:6.4rem;height:6.4rem;border-radius:50%;overflow:hidden;background:var(--fill-2);flex:none;box-shadow:0 0 0 .22rem var(--c)}
+.p .av img{position:relative;z-index:1;width:100%;height:100%;object-fit:cover;display:block}
+.p .av .ini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:600;color:var(--text-2)}
+.p .m{flex:1;min-width:0}
+.p .nm{font-size:2rem;font-weight:600;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15}
+.p .tm{font-size:1.3rem;color:var(--text-3);font-variant-numeric:tabular-nums;margin-top:.3rem}
+.p .sb{font-size:1.4rem;line-height:1.3;color:var(--text-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.p .sb b{color:var(--purple);font-weight:500}
+.p .pfoot{margin-top:auto;display:flex;align-items:center;gap:1rem}
+.p .meter{flex:1;display:flex;gap:.2rem;height:.65rem}
+.p .meter i{display:block;height:100%;border-radius:.35rem}
+.p .days{font-size:1.2rem;color:var(--text-3);font-variant-numeric:tabular-nums;flex:none}
+.col-empty{margin:auto;padding:2rem;text-align:center;font-size:1.3rem;color:var(--text-3)}
+
+.rail{display:flex;flex-direction:column;gap:1.2rem;min-height:0}
+.tile{background:var(--surface);border-radius:1.6rem;overflow:hidden;display:flex;flex-direction:column;min-height:0;box-shadow:var(--shadow)}
+#tvmap{flex:1;min-height:0;background:var(--map-bg)}
+.leaflet-container{background:var(--map-bg);font-family:inherit}
+.leaflet-tile{filter:var(--tile)}
+.leaflet-control-attribution{background:transparent!important;color:var(--text-3)!important;font-size:.85rem!important}
+.leaflet-control-attribution a{color:var(--text-2)!important}
+.pin{background:none!important;border:none!important}
+.pin .disc{width:3.1rem;height:3.1rem;border-radius:50%;overflow:hidden;position:relative;border:.22rem solid var(--c);background:var(--surface);box-shadow:0 .4rem 1.2rem rgba(0,0,0,.4)}
+.pin .disc img{position:relative;z-index:1;width:100%;height:100%;object-fit:cover;display:block}
+.pin .disc .ini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:600;color:var(--text-2)}
+
+.qr{flex:none;display:flex;align-items:center;gap:1.3rem;padding:1.3rem}
+.qr .code{width:9.5rem;height:9.5rem;border-radius:1rem;background:#fff;padding:.6rem;flex:none;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.qr .code img,.qr .code canvas{width:100%!important;height:100%!important;display:block}
+.qr .code .fb{font-size:.9rem;color:#333;text-align:center;line-height:1.2;word-break:break-all;padding:.3rem}
+.qr h3{margin:0 0 .45rem;font-size:1.7rem;font-weight:600;letter-spacing:-.025em}
+.qr p{margin:0;font-size:1.25rem;line-height:1.35;color:var(--text-2)}
+
+.feed{flex:none;padding:1.1rem 1.3rem 1.2rem}
+.feed h3{margin:0 0 .8rem;font-size:1.35rem;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em}
+.feed .f{display:flex;align-items:center;gap:.8rem;padding:.5rem 0;font-size:1.3rem}
+.feed .f + .f{border-top:.08rem solid var(--sep)}
+.feed .f i{width:.7rem;height:.7rem;border-radius:50%;background:var(--c);display:block;flex:none}
+.feed .f .nm{font-weight:600;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feed .f .st{color:var(--text-2);white-space:nowrap}
+.feed .f .tm{margin-left:auto;color:var(--text-3);font-variant-numeric:tabular-nums;flex:none}
+
+/* ══════════ TELEMÓVEL — só registar ══════════ */
+html.phone{font-size:16px}
+html.phone body{font-size:17px;line-height:1.35;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+.ph{max-width:520px;margin:0 auto;padding:0 16px}
+.ph-nav{position:sticky;top:0;z-index:20;background:var(--bar);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px)}
+.ph-nav .in{display:flex;align-items:center;gap:10px;height:52px;max-width:520px;margin:0 auto;padding:0 16px}
+.ph-nav img{height:22px;width:auto;object-fit:contain}
+.ph-nav img.on-light{height:26.4px}
+.ph-nav .now{margin-left:auto;font-size:14px;color:var(--text-2);font-variant-numeric:tabular-nums}
+.ph-nav .theme{width:34px;height:34px;border-radius:50%;background:var(--fill);color:var(--text-2);display:flex;align-items:center;justify-content:center;font-size:17px;flex:none;transition:transform .18s var(--ease)}
+.ph-nav .theme:active{transform:scale(.92)}
+
+.ph h1{margin:16px 0 4px;font-size:32px;font-weight:700;letter-spacing:-.032em}
+.ph .sub{font-size:15px;color:var(--text-2);margin-bottom:20px;text-transform:capitalize}
+
+.lbl{font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.03em;color:var(--text-2);padding:0 16px 7px;margin-top:24px}
+.inset{background:var(--surface);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+.frow{display:flex;align-items:center;gap:10px;padding:12px 16px;min-height:50px}
+.frow label{flex:none;font-size:17px}
+select{margin-left:auto;max-width:64%;background:none;border:none;font:inherit;font-size:17px;color:var(--text-2);text-align:right;-webkit-appearance:none;appearance:none;cursor:pointer;padding:4px 0}
+select:focus{outline:none;color:var(--blue)}
+textarea{width:100%;background:none;border:none;padding:14px 16px;font:inherit;font-size:17px;color:var(--text);resize:none;min-height:76px}
+textarea:focus{outline:none}
+textarea::placeholder{color:var(--text-3)}
+
+.opt{position:relative;display:flex;align-items:center;gap:13px;width:100%;padding:13px 16px;text-align:left;min-height:58px}
+.opt:active{background:var(--fill)}
+.opt + .opt::before{content:"";position:absolute;left:60px;right:0;top:0;height:.5px;background:var(--sep)}
+.opt .sq{width:32px;height:32px;border-radius:8px;background:var(--c);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;flex:none}
+.opt .t{font-size:17px}
+.opt .s{display:block;font-size:13px;color:var(--text-2);margin-top:1px}
+.opt .mark{margin-left:auto;color:var(--blue);font-size:17px;opacity:0;transform:scale(.6);transition:all .22s var(--ease)}
+.opt[aria-pressed="true"] .mark{opacity:1;transform:none}
+
+.alert{display:none;gap:9px;align-items:center;margin-top:16px;background:color-mix(in srgb,var(--red) 14%,transparent);color:var(--red);border-radius:12px;padding:13px 15px;font-size:15px;font-weight:500}
+.alert.on{display:flex}
+.cta{width:100%;margin-top:26px;background:var(--blue);color:#fff;font-size:17px;font-weight:600;padding:16px;border-radius:14px;transition:transform .18s var(--ease),opacity .18s}
+.cta:active{transform:scale(.985);opacity:.9}
+.plain{width:100%;margin-top:12px;color:var(--blue);font-size:17px;padding:15px;border-radius:14px;background:var(--surface);box-shadow:var(--shadow)}
+
+.done-card{text-align:center;padding:56px 20px 30px}
+.done-card .ring{width:88px;height:88px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:44px;margin:0 auto 22px;animation:pop .5s var(--ease)}
+@keyframes pop{from{transform:scale(.5);opacity:0}to{transform:none;opacity:1}}
+.done-card h2{margin:0 0 8px;font-size:26px;font-weight:700;letter-spacing:-.026em}
+.done-card p{margin:0;font-size:16px;color:var(--text-2)}
+
+
+.switch{display:block;margin:26px auto 8px;font-size:13px;color:var(--text-3);text-align:center}
+html.tv .switch{position:fixed;right:1rem;bottom:.4rem;margin:0;font-size:.95rem;color:var(--text-3);opacity:.6;z-index:5}
+
+
+
+/* ── Telemóvel: vistas, separadores e quadro ──────────── */
+html.phone body{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+.pv{display:none}
+.pv.on{display:block;animation:fadein .26s ease}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+
+.phtabs{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;
+  background:var(--bar);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+  border-top:.5px solid var(--sep);padding-bottom:env(safe-area-inset-bottom);
+}
+.phtabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 7px;color:var(--text-2)}
+.phtabs button .ico{font-size:23px}
+.phtabs button span{font-size:10px;font-weight:500;letter-spacing:0}
+.phtabs button[aria-selected="true"]{color:var(--blue)}
+
+.sumcard{background:var(--surface);border-radius:16px;padding:16px;box-shadow:var(--shadow);margin-bottom:24px}
+.capsule{display:flex;gap:3px;height:12px;margin-bottom:14px}
+.capsule i{display:block;height:100%;border-radius:6px;transform-origin:left center;animation:grow .7s var(--ease) both}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.mini{display:flex;gap:8px;margin-bottom:0}
+.mini div{flex:1;background:transparent;border-radius:0;padding:0;text-align:center;box-shadow:none;position:relative}
+.mini div + div::before{content:"";position:absolute;left:-4px;top:3px;bottom:3px;width:.5px;background:var(--sep)}
+.mini .v{font-size:22px;font-weight:600;color:var(--c);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.mini .k{font-size:11px;color:var(--text-2);margin-top:1px}
+
+.pgroup{margin-bottom:24px}
+.pgroup-head{display:flex;align-items:center;gap:9px;padding:0 4px 8px}
+.pgroup-head .badge{width:26px;height:26px;border-radius:7px;background:var(--c);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none}
+.pgroup-head h2{margin:0;font-size:19px;font-weight:700;letter-spacing:-.022em}
+.pgroup-head .n{margin-left:auto;font-size:15px;color:var(--text-2);font-variant-numeric:tabular-nums}
+.plist{background:var(--surface);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+.prow{position:relative;display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 14px;min-height:62px}
+.prow + .prow::before{content:"";position:absolute;left:70px;right:0;top:0;height:.5px;background:var(--sep)}
+.prow .av{position:relative;width:44px;height:44px;border-radius:50%;overflow:hidden;background:var(--fill-2);flex:none}
+.prow .av img{position:relative;z-index:1;width:100%;height:100%;object-fit:cover;display:block}
+.prow .av .ini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:var(--text-2)}
+.prow .av::after{content:"";position:absolute;z-index:2;right:-1px;bottom:-1px;width:15px;height:15px;border-radius:50%;background:var(--c);border:2px solid var(--surface)}
+.prow .m{flex:1;min-width:0}
+.prow .nm{font-size:16px;font-weight:600;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prow .sb{font-size:14px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.prow .sb b{color:var(--purple);font-weight:500}
+.prow .tm{font-size:14px;color:var(--text-3);font-variant-numeric:tabular-nums;flex:none}
+.pempty{padding:20px 16px;text-align:center;font-size:14px;color:var(--text-2)}
+
+.mapcard{background:var(--surface);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+#ph-map{height:min(52vh,380px);background:var(--map-bg)}
+.logrow{position:relative;display:flex;align-items:center;gap:10px;padding:12px 14px}
+.logrow + .logrow::before{content:"";position:absolute;left:14px;right:0;top:0;height:.5px;background:var(--sep)}
+.logrow i{width:8px;height:8px;border-radius:50%;background:var(--c);flex:none}
+.logrow .m{flex:1;min-width:0}
+.logrow .nm{font-size:15px;font-weight:600;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.logrow .sb{font-size:13px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.logrow .tm{font-size:13px;color:var(--text-3);flex:none}
+
+/* ── TV em ecrãs estreitos ou em retrato (fallback) ────── */
+@media (max-width:1100px){
+  html.tv,html.tv body{height:auto;overflow:auto}
+  html.tv{font-size:clamp(11px,2.6vw,16px)}
+  .tvroot{height:auto;min-height:100vh;padding:1.2rem 1rem 2rem;gap:1.2rem}
+  .tvbar{flex-wrap:wrap;gap:1rem}
+  .tvbar h1{font-size:2.2rem}
+  .tvbar .right{margin-left:auto}
+  .tvbar .t{font-size:3.2rem}
+  .tvgrid{grid-template-columns:repeat(2,1fr);grid-auto-rows:minmax(24rem,auto)}
+  .rail{grid-column:1 / -1}
+  .tile:first-child{min-height:26rem}
+  .col-body{overflow:visible}
+  .p{height:auto;flex:0 0 auto;min-height:0}
+}
+@media (max-width:620px){
+  .tvgrid{grid-template-columns:1fr}
+  .qr{flex-direction:column;text-align:center}
+}
+
+/* ── Telemóvel: recortes de ecrã e ecrãs pequenos ─────── */
+html.phone body{overflow-x:hidden}
+.ph{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+.ph-nav .in{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+@media (max-width:360px){
+  .ph h1{font-size:28px}
+  .mini .v{font-size:19px}
+  .mini .k{font-size:10px}
+  .mini div{padding:9px 6px}
+  .opt .s{display:none}
+}
+
+@media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation:none!important;transition:none!important} }
+</style>
+</head>
+<body>
+
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-factory" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20V11l5.2 3.2V11l5.2 3.2V11l5.2 3.2V20z"/><path d="M18.6 11V4.6h2.2V11"/><path d="M2 20h20"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 10.7 12 4l8.6 6.7"/><path d="M5.8 9.8V19a1 1 0 0 0 1 1h10.4a1 1 0 0 0 1-1V9.8"/><path d="M9.8 20v-5.2h4.4V20"/></symbol>
+  <symbol id="i-plane" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.4 21.2l1.3-5.6 6.6 3.6 1.8-1.8-5.6-5.6 4.6-4.6a1.9 1.9 0 0 0-2.7-2.7l-4.6 4.6L6.2 3.5 4.4 5.3 8 11.9l-5.6 1.3"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.1"/><path d="M12 2.4v2.4M12 19.2v2.4M2.4 12h2.4M19.2 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M18.8 5.2l-1.7 1.7M6.9 17.1l-1.7 1.7"/></symbol>
+  <symbol id="i-people" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M2.6 20.2a6.4 6.4 0 0 1 12.8 0"/><path d="M16.4 5a3.4 3.4 0 0 1 0 6.4"/><path d="M17.6 14.4a6.4 6.4 0 0 1 3.8 5.8"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21.4s6.6-6.3 6.6-11.2a6.6 6.6 0 1 0-13.2 0C5.4 15.1 12 21.4 12 21.4z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-checkin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3.6h9.4a1.6 1.6 0 0 1 1.6 1.6v13.6a1.6 1.6 0 0 1-1.6 1.6H9"/><path d="M13.4 12H3.6"/><path d="M7.2 8.2 3.4 12l3.8 3.8"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a8.6 8.6 0 1 0 11.1 11.1z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 12.6l4.6 4.6L19.2 7.4"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.2"/><path d="M12 7.4v5.4M12 16.2v.3"/></symbol>
+</svg>
+
+<!-- ═══════════ TV ═══════════ -->
+<div class="tvroot hide" id="tv">
+  <header class="tvbar">
+    <img class="logo on-dark" src="https://res.cloudinary.com/dlkkjtgvy/image/upload/v1780388780/somengil_logo_white_ofh0xi.png" alt="Somengil" onerror="this.remove()">
+    <img class="logo on-light" src="https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786032688/1_SOMENGIL_PNG_LOGO__p1z4co.png" alt="Somengil" onerror="this.remove()">
+    <h1>Equipa comercial</h1>
+    <span class="live"><i></i><span id="tv-live">Em direto</span></span>
+    <div class="right">
+      <div class="t" id="tv-clock">--:--</div>
+      <div class="d" id="tv-date">—</div>
+    </div>
+    <button class="theme" onclick="toggleTheme()" aria-label="Alternar tema claro ou escuro"><svg class="ico on-dark"><use href="#i-sun"/></svg><svg class="ico on-light"><use href="#i-moon"/></svg></button>
+  </header>
+
+  <div class="tvgrid">
+    <div class="col" id="col-fabrica"></div>
+    <div class="col" id="col-home"></div>
+    <div class="col" id="col-viagem"></div>
+    <div class="col" id="col-ferias"></div>
+
+    <aside class="rail">
+      <div class="tile" style="flex:1"><div id="tvmap"></div></div>
+      <div class="tile qr">
+        <div class="code" id="qr"><span class="fb">Defina o endereço em CHECKIN_URL</span></div>
+        <div>
+          <h3>Registe o seu dia</h3>
+          <p>Aponte a câmara do telemóvel ao código e diga onde está a trabalhar hoje.</p>
+        </div>
+      </div>
+      <div class="tile feed">
+        <h3>Últimos registos</h3>
+        <div id="tv-feed"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ═══════════ TELEMÓVEL ═══════════ -->
+<div class="hide" id="phone">
+  <div class="ph-nav"><div class="in">
+    <img class="on-dark" src="https://res.cloudinary.com/dlkkjtgvy/image/upload/v1780388780/somengil_logo_white_ofh0xi.png" alt="Somengil" onerror="this.remove()">
+    <img class="on-light" src="https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786032688/1_SOMENGIL_PNG_LOGO__p1z4co.png" alt="Somengil" onerror="this.remove()">
+    <span class="now" id="ph-now"></span>
+    <button class="theme" onclick="toggleTheme()" aria-label="Alternar tema claro ou escuro"><svg class="ico on-dark"><use href="#i-sun"/></svg><svg class="ico on-light"><use href="#i-moon"/></svg></button>
+  </div></div>
+
+  <!-- EQUIPA -->
+  <section class="ph pv on" id="pv-equipa">
+    <h1>Equipa comercial</h1>
+    <div class="sub" id="ph-date">—</div>
+
+    <div class="sumcard">
+      <div class="capsule" id="ph-capsule"></div>
+      <div class="mini" id="ph-mini"></div>
+    </div>
+
+    <div id="ph-groups"></div>
+  </section>
+
+  <!-- MAPA -->
+  <section class="ph pv" id="pv-mapa">
+    <h1>Mapa</h1>
+    <div class="sub">Última posição registada</div>
+    <div class="mapcard"><div id="ph-map"></div></div>
+    <div class="lbl" style="margin-top:20px">Registos recentes</div>
+    <div class="inset" id="ph-logs"></div>
+  </section>
+
+  <!-- REGISTO -->
+  <section class="ph pv" id="pv-registo">
+    <div id="ph-form">
+      <h1>Onde está hoje?</h1>
+      <div class="sub" id="ph-date2">—</div>
+
+      <form id="form" onsubmit="submitCheckin(event)">
+        <div class="lbl" style="margin-top:8px">Quem</div>
+        <div class="inset"><div class="frow">
+          <label for="f-member">Nome</label>
+          <select id="f-member" onchange="onMemberChange()" required><option value="" disabled selected>Escolher</option></select>
+        </div></div>
+
+        <div class="lbl">Local de trabalho</div>
+        <div class="inset" id="picker"></div>
+        <input type="hidden" id="f-where">
+
+        <div id="sub-block" hidden>
+          <div class="lbl">Quem assume as suas funções</div>
+          <div class="inset"><div class="frow">
+            <label for="f-sub">Colega</label>
+            <select id="f-sub"><option value="" disabled selected>Escolher</option></select>
+          </div></div>
+        </div>
+
+        <div class="lbl">Nota</div>
+        <div class="inset"><textarea id="f-note" placeholder="Opcional — ex.: visita ao cliente X"></textarea></div>
+
+        <div class="alert" id="alert"><svg class="ico" style="font-size:18px"><use href="#i-alert"/></svg><span id="alert-text"></span></div>
+
+        <button type="submit" class="cta">Confirmar registo</button>
+      </form>
+    </div>
+
+    <div class="hide" id="ph-done">
+      <div class="done-card">
+        <div class="ring"><svg class="ico"><use href="#i-check"/></svg></div>
+        <h2 id="done-title">Registado</h2>
+        <p id="done-sub"></p>
+      </div>
+      <button class="plain" onclick="backToForm()">Corrigir registo</button>
+      <button class="plain" onclick="showPhoneView('equipa')">Ver a equipa</button>
+    </div>
+  </section>
+
+  <nav class="phtabs">
+    <button id="pt-equipa" aria-selected="true" onclick="showPhoneView('equipa')">
+      <svg class="ico"><use href="#i-people"/></svg><span>Equipa</span>
+    </button>
+    <button id="pt-mapa" aria-selected="false" onclick="showPhoneView('mapa')">
+      <svg class="ico"><use href="#i-map"/></svg><span>Mapa</span>
+    </button>
+    <button id="pt-registo" aria-selected="false" onclick="showPhoneView('registo')">
+      <svg class="ico"><use href="#i-checkin"/></svg><span>Registar</span>
+    </button>
+  </nav>
+</div>
+
+<button class="switch" id="switch" onclick="toggleMode()"></button>
+
+<script>
+/* ═══ Configuração ═══ */
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHZjtdZjrzW9n50i1D9aeA45YhgD3cPHmx8_LKG0Z1nmON0KogO4emoXDTVJaRuAZ9/exec";
+/* Endereço público desta página — é o que fica no código QR da TV.
+   Deixe vazio para usar automaticamente o endereço atual. */
+const CHECKIN_URL = "";
+const REFRESH_MS = 60000;   // com que frequência a TV se atualiza
+
+const STATUS = {
+  fabrica:{label:'Na fábrica', short:'Fábrica',    sub:'Instalações Somengil', icon:'i-factory', c:'var(--green)'},
+  home:   {label:'Home office',short:'Home office',sub:'Trabalho remoto',      icon:'i-home',    c:'var(--blue)'},
+  viagem: {label:'Em viagem',  short:'Em viagem',  sub:'Visita a cliente',     icon:'i-plane',   c:'var(--orange)'},
+  ferias: {label:'De férias',  short:'De férias',  sub:'Ausente',              icon:'i-sun',     c:'var(--purple)'}
+};
+const ORDER = ['fabrica','home','viagem','ferias'];
+
+const DEFAULT_MEMBERS = [
+  {id:1,name:"David José Nunes Borges",status:"fabrica",subId:null,metrics:{fabrica:18,home:4,viagem:2},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012316/David_Borges_Comercial_iaun1r.jpg",lat:40.5751,lng:-8.4442,lastUpdate:"2026-08-06 09:15",obs:"Em trabalho na fábrica"},
+  {id:2,name:"Diogo Paulo Gonçalves Marques Brito de Sousa",status:"fabrica",subId:null,metrics:{fabrica:21,home:2,viagem:5},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012316/Diogo_Sousa_Comercial_hukxx3.jpg",lat:40.5753,lng:-8.4440,lastUpdate:"2026-08-06 08:30",obs:"Acompanhamento da linha de produção"},
+  {id:3,name:"João Maria Bernardo da Cunha Pinto",status:"home",subId:null,metrics:{fabrica:10,home:14,viagem:3},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012316/Jo%C3%A3o_Pinto_Comercial_jfqmzk.jpg",lat:41.1579,lng:-8.6291,lastUpdate:"2026-08-06 09:00",obs:"Trabalho remoto no Porto"},
+  {id:4,name:"Manuel Diniz Cruz do Marco",status:"viagem",subId:null,metrics:{fabrica:7,home:3,viagem:18},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012316/Manuel_Diniz_Comercial_lhb2pc.jpg",lat:38.7223,lng:-9.1393,lastUpdate:"2026-08-06 10:20",obs:"Reuniões comerciais em Lisboa"},
+  {id:5,name:"Miguel André Ferreira Pacheco Quental",status:"fabrica",subId:null,metrics:{fabrica:25,home:1,viagem:4},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012315/Andr%C3%A9_Quental_Comercial_okupkb.jpg",lat:40.5749,lng:-8.4445,lastUpdate:"2026-08-06 08:45",obs:"Gestão de propostas comerciais"},
+  {id:6,name:"Renato Pires Gomes",status:"ferias",subId:1,metrics:{fabrica:12,home:5,viagem:6},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012316/Renato_Gomes_Comercial_fs38ew.jpg",lat:40.5750,lng:-8.4441,lastUpdate:"2026-08-01 18:00",obs:"Férias de verão"},
+  {id:7,name:"David Mendez",status:"viagem",subId:null,metrics:{fabrica:5,home:2,viagem:20},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012315/David_Mendez_Comercial_ayjxcw.jpg",lat:40.4168,lng:-3.7038,lastUpdate:"2026-08-06 07:50",obs:"Prospeção de mercado em Madrid"},
+  {id:8,name:"David Sturla",status:"home",subId:null,metrics:{fabrica:8,home:15,viagem:5},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012316/Davide_Sturla_Comercial_he8i21.jpg",lat:45.4642,lng:9.1900,lastUpdate:"2026-08-06 08:15",obs:"Home office em Milão"},
+  {id:9,name:"Juan Marco",status:"fabrica",subId:null,metrics:{fabrica:16,home:3,viagem:7},photo:"",lat:40.5752,lng:-8.4443,lastUpdate:"2026-08-06 08:50",obs:"Fábrica Somengil"},
+  {id:10,name:"Francisco Ventura",status:"fabrica",subId:null,metrics:{fabrica:19,home:4,viagem:6},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012805/Francisco_Ventura_Comercial_ykluyu.jpg",lat:40.5754,lng:-8.4444,lastUpdate:"2026-08-06 09:10",obs:"Análise de projetos"},
+  {id:11,name:"Simão Ventura",status:"viagem",subId:null,metrics:{fabrica:9,home:2,viagem:15},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012805/Sim%C3%A3o_Ventura_Comercial_iso5zg.jpg",lat:38.7071,lng:-9.1355,lastUpdate:"2026-08-06 11:00",obs:"Demonstração técnica de equipamento"}
+];
+
+let members=[], logs=[], maps={}, markers={}, gps={lat:40.5751,lng:-8.4442}, MODE='tv';
+
+/* ═══ Estado ═══ */
+const store={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+function loadState(){
+  try{ members=JSON.parse(store.get('somengil_presenca_members_v6'))||JSON.parse(JSON.stringify(DEFAULT_MEMBERS)); }
+  catch(e){ members=JSON.parse(JSON.stringify(DEFAULT_MEMBERS)); }
+  try{ logs=JSON.parse(store.get('somengil_presenca_history_v6'))||null; }catch(e){ logs=null; }
+  if(!logs) logs=[
+    {memberName:"Simão Ventura",status:"viagem",subName:"-",time:"2026-08-06 11:00",lat:"38.7071",lng:"-9.1355",obs:"Demonstração técnica"},
+    {memberName:"Manuel Diniz Cruz do Marco",status:"viagem",subName:"-",time:"2026-08-06 10:20",lat:"38.7223",lng:"-9.1393",obs:"Reuniões comerciais"},
+    {memberName:"Renato Pires Gomes",status:"ferias",subName:"David José Nunes Borges",time:"2026-08-01 18:00",lat:"40.5750",lng:"-8.4441",obs:"Férias de verão"}
+  ];
+}
+function saveState(){
+  store.set('somengil_presenca_members_v6',JSON.stringify(members));
+  store.set('somengil_presenca_history_v6',JSON.stringify(logs));
+}
+
+/* ═══ Utilitários ═══ */
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const initials=n=>{const p=String(n||'').trim().split(/\s+/);return (p.length===1?p[0].slice(0,2):p[0][0]+p[p.length-1][0]).toUpperCase()};
+const shortName=n=>{const p=String(n).trim().split(/\s+/);return p.length<3?n:`${p[0]} ${p[p.length-1]}`};
+function hhmm(ts){ return String(ts).split(' ')[1] || '--:--'; }
+function dmy(ts){ return String(ts).split(' ')[0].slice(5).split('-').reverse().join('/'); }
+function isToday(ts){const n=new Date();return String(ts).startsWith(`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`)}
+function ago(ts){
+  const d=new Date(String(ts).replace(' ','T'));
+  if(isNaN(d)) return hhmm(ts);
+  const min=Math.round((Date.now()-d.getTime())/60000);
+  if(min<1) return 'agora';
+  if(min<60) return `há ${min} min`;
+  if(min<1440) return `há ${Math.round(min/60)} h`;
+  return dmy(ts);
+}
+function avatarHtml(m,cls='av'){
+  return `<div class="${cls}"><span class="ini">${initials(m.name)}</span>${m.photo?`<img src="${esc(m.photo)}" alt="" loading="lazy" onerror="this.remove()">`:''}</div>`;
+}
+
+/* ═══ TV ═══ */
+function renderTV(){
+  ORDER.forEach(k=>{
+    const st=STATUS[k], list=members.filter(m=>m.status===k);
+    const rows = list.length ? list.map(m=>{
+      const sub=m.subId?members.find(x=>x.id===m.subId):null;
+      const second = sub ? `<b>Substituído por ${esc(shortName(sub.name))}</b>` : esc(m.obs||st.sub);
+      const tot = (m.metrics.fabrica||0)+(m.metrics.home||0)+(m.metrics.viagem||0) || 1;
+      return `<div class="p" style="--c:${st.c}">
+        <div class="ptop">
+          ${avatarHtml(m)}
+          <div class="m">
+            <div class="nm">${esc(shortName(m.name))}</div>
+            <div class="tm">${isToday(m.lastUpdate)?'Registou às '+hhmm(m.lastUpdate):'Desde '+dmy(m.lastUpdate)}</div>
+          </div>
+        </div>
+        <div class="sb">${second}</div>
+        <div class="pfoot">
+          <div class="meter" title="Dias acumulados">
+            <i style="flex:${m.metrics.fabrica};background:var(--green)"></i>
+            <i style="flex:${m.metrics.home};background:var(--blue)"></i>
+            <i style="flex:${m.metrics.viagem};background:var(--orange)"></i>
+          </div>
+          <span class="days">${tot} dias</span>
+        </div>
+      </div>`;
+    }).join('') : `<div class="col-empty">Ninguém</div>`;
+
+    document.getElementById('col-'+k).style.setProperty('--c',st.c);
+    document.getElementById('col-'+k).innerHTML = `
+      <div class="col-head">
+        <div class="badge"><svg class="ico" style="font-size:1.5rem"><use href="#${st.icon}"/></svg></div>
+        <h2>${st.label}</h2><span class="n">${list.length}</span>
+      </div>
+      <div class="col-body">${rows}</div>`;
+  });
+
+  document.getElementById('tv-feed').innerHTML = logs.slice(0,5).map(l=>`
+    <div class="f" style="--c:${STATUS[l.status].c}">
+      <i></i>
+      <span class="nm">${esc(shortName(l.memberName))}</span>
+      <span class="st">· ${STATUS[l.status].short}</span>
+      <span class="tm">${ago(l.time)}</span>
+    </div>`).join('') || `<div class="f" style="color:rgba(235,235,245,.3)">Sem registos hoje</div>`;
+}
+
+function pinFor(m){
+  return L.divIcon({className:'pin',
+    html:`<div class="disc" style="--c:${STATUS[m.status].c}"><span class="ini">${initials(m.name)}</span>${m.photo?`<img src="${esc(m.photo)}" alt="" onerror="this.remove()">`:''}</div>`,
+    iconSize:[40,40], iconAnchor:[20,20]});
+}
+function drawMap(id){
+  const box=document.getElementById(id);
+  if(!box) return;
+  if(typeof L==='undefined'){ box.innerHTML='<div style="height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:1.3rem;padding:16px;text-align:center">Mapa indisponível</div>'; return; }
+  const tv = (id==='tvmap');
+  if(!maps[id]){
+    maps[id]=L.map(id, tv
+      ? {zoomControl:false,attributionControl:true,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,keyboard:false}
+      : {zoomControl:true,scrollWheelZoom:false}).setView([40.57,-8.44],5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap'}).addTo(maps[id]);
+    markers[id]=[];
+  } else maps[id].invalidateSize();
+  const m0=maps[id];
+  (markers[id]||[]).forEach(x=>m0.removeLayer(x)); markers[id]=[];
+  const b=[];
+  members.forEach(m=>{ if(!m.lat||!m.lng) return;
+    markers[id].push(L.marker([m.lat,m.lng],{icon:pinFor(m),interactive:!tv}).addTo(m0)); b.push([m.lat,m.lng]); });
+  if(b.length) m0.fitBounds(b,{padding:[35,35],maxZoom:9});
+}
+
+function makeQR(){
+  const box=document.getElementById('qr');
+  const url = CHECKIN_URL || (location.origin+location.pathname+'?modo=telemovel');
+  if(typeof QRCode==='undefined'){ box.innerHTML=`<span class="fb">${esc(url)}</span>`; return; }
+  box.innerHTML='';
+  try{ new QRCode(box,{text:url,width:220,height:220,correctLevel:QRCode.CorrectLevel.M}); }
+  catch(e){ box.innerHTML=`<span class="fb">${esc(url)}</span>`; }
+}
+
+function tvClock(){
+  const n=new Date();
+  document.getElementById('tv-clock').textContent=n.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
+  const d=n.toLocaleDateString('pt-PT',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('tv-date').textContent=d.charAt(0).toUpperCase()+d.slice(1);
+}
+
+/* ═══ TELEMÓVEL ═══ */
+function renderPhoneBoard(){
+  const tot=members.length;
+  const counts=ORDER.map(k=>members.filter(m=>m.status===k).length);
+
+  const cap=document.getElementById('ph-capsule');
+  if(cap) cap.innerHTML=ORDER.map((k,i)=>counts[i]?`<i style="flex:${counts[i]};background:${STATUS[k].c};animation-delay:${i*80}ms"></i>`:'').join('');
+
+  const mini=document.getElementById('ph-mini');
+  if(mini) mini.innerHTML=ORDER.map((k,i)=>`<div style="--c:${STATUS[k].c}"><div class="v">${counts[i]}</div><div class="k">${STATUS[k].short}</div></div>`).join('');
+
+  const groups=document.getElementById('ph-groups');
+  if(groups) groups.innerHTML=ORDER.map(k=>{
+    const st=STATUS[k], list=members.filter(m=>m.status===k);
+    const rows=list.length?list.map(m=>{
+      const sub=m.subId?members.find(x=>x.id===m.subId):null;
+      const second=sub?`<b>Substituído por ${esc(shortName(sub.name))}</b>`:esc(m.obs||st.sub);
+      return `<div class="prow">
+        <div class="av" style="--c:${st.c}"><span class="ini">${initials(m.name)}</span>${m.photo?`<img src="${esc(m.photo)}" alt="" loading="lazy" onerror="this.remove()">`:''}</div>
+        <div class="m"><div class="nm">${esc(shortName(m.name))}</div><div class="sb">${second}</div></div>
+        <div class="tm">${isToday(m.lastUpdate)?hhmm(m.lastUpdate):dmy(m.lastUpdate)}</div>
+      </div>`;
+    }).join(''):`<div class="pempty">Ninguém neste estado hoje.</div>`;
+    return `<section class="pgroup">
+      <div class="pgroup-head" style="--c:${st.c}">
+        <div class="badge"><svg class="ico" style="font-size:14px"><use href="#${st.icon}"/></svg></div>
+        <h2>${st.label}</h2><span class="n">${list.length}</span>
+      </div>
+      <div class="plist">${rows}</div>
+    </section>`;
+  }).join('');
+
+  const lg=document.getElementById('ph-logs');
+  if(lg) lg.innerHTML = logs.length ? logs.slice(0,12).map(l=>{
+    const extra=(l.subName&&l.subName!=='-')?` · substituído por ${esc(shortName(l.subName))}`:'';
+    return `<div class="logrow" style="--c:${STATUS[l.status].c}">
+      <i></i>
+      <div class="m"><div class="nm">${esc(shortName(l.memberName))} · ${STATUS[l.status].short}</div>
+      <div class="sb">${esc(l.obs||'—')}${extra}</div></div>
+      <div class="tm">${ago(l.time)}</div>
+    </div>`;
+  }).join('') : `<div class="pempty">Ainda não há registos.</div>`;
+}
+
+function showPhoneView(v){
+  document.querySelectorAll('.pv').forEach(e=>e.classList.remove('on'));
+  document.getElementById('pv-'+v).classList.add('on');
+  ['equipa','mapa','registo'].forEach(k=>document.getElementById('pt-'+k).setAttribute('aria-selected',String(k===v)));
+  window.scrollTo({top:0});
+  if(v==='mapa') setTimeout(()=>drawMap('ph-map'),80);
+  if(v==='equipa') renderPhoneBoard();
+}
+
+function buildPicker(){
+  document.getElementById('picker').innerHTML = ORDER.map(k=>{
+    const st=STATUS[k];
+    return `<button type="button" class="opt" id="opt-${k}" aria-pressed="false" onclick="pickWhere('${k}')">
+      <span class="sq" style="--c:${st.c}"><svg class="ico" style="font-size:17px"><use href="#${st.icon}"/></svg></span>
+      <span><span class="t">${st.short}</span><span class="s">${st.sub}</span></span>
+      <svg class="ico mark"><use href="#i-check"/></svg>
+    </button>`;
+  }).join('');
+}
+function pickWhere(k){
+  hideAlert();
+  document.getElementById('f-where').value=k;
+  ORDER.forEach(x=>document.getElementById('opt-'+x).setAttribute('aria-pressed',String(x===k)));
+  document.getElementById('sub-block').hidden=(k!=='ferias');
+  if(k==='ferias') fillSubs();
+}
+function fillSubs(){
+  const me=parseInt(document.getElementById('f-member').value)||null;
+  document.getElementById('f-sub').innerHTML='<option value="" disabled selected>Escolher</option>'+
+    members.filter(m=>m.id!==me).map(m=>`<option value="${m.id}">${esc(shortName(m.name))}</option>`).join('');
+}
+function onMemberChange(){ hideAlert(); if(document.getElementById('f-where').value==='ferias') fillSubs(); }
+function showAlert(t){ document.getElementById('alert-text').textContent=t; document.getElementById('alert').classList.add('on'); }
+function hideAlert(){ document.getElementById('alert').classList.remove('on'); }
+
+function preparePhone(){
+  document.getElementById('f-member').innerHTML='<option value="" disabled selected>Escolher</option>'+
+    members.map(m=>`<option value="${m.id}">${esc(shortName(m.name))}</option>`).join('');
+  const n=new Date();
+  document.getElementById('ph-now').textContent=n.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
+  const d=n.toLocaleDateString('pt-PT',{weekday:'long',day:'numeric',month:'long'});
+  const nice=d.charAt(0).toUpperCase()+d.slice(1);
+  document.getElementById('ph-date').textContent=nice;
+  document.getElementById('ph-date2').textContent=nice;
+  renderPhoneBoard();
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(p=>{gps={lat:p.coords.latitude,lng:p.coords.longitude}},()=>{},{timeout:5000});
+  }
+}
+function backToForm(){
+  document.getElementById('ph-done').classList.add('hide');
+  document.getElementById('ph-form').classList.remove('hide');
+  showPhoneView('registo');
+  document.getElementById('form').reset();
+  document.getElementById('f-where').value='';
+  document.getElementById('sub-block').hidden=true;
+  ORDER.forEach(x=>document.getElementById('opt-'+x).setAttribute('aria-pressed','false'));
+  hideAlert(); renderPhoneBoard();
+}
+
+function submitCheckin(e){
+  e.preventDefault();
+  const id=parseInt(document.getElementById('f-member').value);
+  const where=document.getElementById('f-where').value;
+  const subId=(where==='ferias'&&document.getElementById('f-sub').value)?parseInt(document.getElementById('f-sub').value):null;
+  const note=document.getElementById('f-note').value.trim();
+
+  if(!id) return showAlert('Escolha o seu nome para continuar.');
+  if(!where) return showAlert('Escolha onde trabalha hoje.');
+  if(where==='ferias'&&!subId) return showAlert('Nas férias tem de indicar quem assume as suas funções.');
+
+  const m=members.find(x=>x.id===id);
+  if(!m) return showAlert('Não encontrámos esse nome na lista.');
+
+  m.status=where; m.subId=subId;
+  if(where!=='ferias'&&m.metrics[where]!==undefined) m.metrics[where]+=1;
+  m.lat=gps.lat+(Math.random()-.5)*0.002;
+  m.lng=gps.lng+(Math.random()-.5)*0.002;
+  const n=new Date();
+  m.lastUpdate=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')} ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+  m.obs=note||STATUS[where].label;
+
+  const sub=subId?members.find(x=>x.id===subId):null;
+  logs.unshift({memberName:m.name,status:where,subName:sub?sub.name:'-',time:m.lastUpdate,lat:m.lat.toFixed(4),lng:m.lng.toFixed(4),obs:m.obs});
+
+  if(GOOGLE_SCRIPT_URL && !GOOGLE_SCRIPT_URL.includes('SUA_WEB_APP')){
+    fetch(GOOGLE_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({time:m.lastUpdate,memberName:m.name,statusLabel:STATUS[where].label,subName:sub?sub.name:'-',lat:m.lat.toFixed(4),lng:m.lng.toFixed(4),obs:m.obs})}).catch(()=>{});
+  }
+  saveState();
+
+  document.getElementById('done-title').textContent=`${STATUS[where].label}, ${shortName(m.name).split(' ')[0]}`;
+  document.getElementById('done-sub').textContent=`Registado às ${hhmm(m.lastUpdate)}. Já aparece no ecrã da fábrica.`;
+  document.getElementById('ph-form').classList.add('hide');
+  document.getElementById('ph-done').classList.remove('hide');
+  renderPhoneBoard();
+  if(maps['ph-map']) drawMap('ph-map');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ═══ Modo ═══ */
+function detectMode(){
+  const q=new URLSearchParams(location.search).get('modo');
+  if(q==='tv') return 'tv';
+  if(q==='telemovel'||q==='mobile') return 'phone';
+  const landscape = innerWidth > innerHeight;
+  return (landscape && innerWidth>=1100) ? 'tv' : 'phone';
+}
+function applyMode(mode){
+  MODE=mode;
+  document.documentElement.className = mode;
+  document.getElementById('tv').classList.toggle('hide', mode!=='tv');
+  document.getElementById('phone').classList.toggle('hide', mode==='tv');
+  document.getElementById('switch').textContent = mode==='tv' ? 'Ver ecrã de telemóvel' : 'Ver ecrã da TV';
+  if(mode==='tv'){
+    renderTV(); tvClock(); makeQR();
+    setTimeout(()=>drawMap('tvmap'),150);
+  } else {
+    buildPicker(); preparePhone();
+  }
+}
+function toggleMode(){ forcedMode = MODE==='tv'?'phone':'tv'; applyMode(forcedMode); }
+
+let forcedMode = new URLSearchParams(location.search).get('modo') ? detectMode() : null;
+let resizeTimer;
+addEventListener('resize',()=>{
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(()=>{
+    Object.values(maps).forEach(m=>m.invalidateSize());
+    if(forcedMode) return;                 // o utilizador (ou o URL) escolheu o modo
+    const want = detectMode();
+    if(want !== MODE) applyMode(want);     // ex.: tablet a rodar entre retrato e paisagem
+  }, 250);
+});
+addEventListener('orientationchange',()=>setTimeout(()=>dispatchEvent(new Event('resize')),300));
+
+/* ═══ Tema ═══ */
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  store.set('somengil_tema',t);
+}
+function toggleTheme(){
+  setTheme(document.documentElement.getAttribute('data-theme')==='light'?'dark':'light');
+  setTimeout(()=>Object.values(maps).forEach(m=>m.invalidateSize()),60);
+}
+function initTheme(mode){
+  const saved=store.get('somengil_tema');
+  if(saved) return setTheme(saved);
+  // por omissão: TV escura (lê-se melhor à distância), telemóvel segue o sistema
+  const sysDark = window.matchMedia && matchMedia('(prefers-color-scheme:dark)').matches;
+  setTheme(mode==='tv' ? 'dark' : (sysDark?'dark':'light'));
+}
+
+/* ═══ Arranque ═══ */
+loadState();
+const startMode = detectMode();
+initTheme(startMode);
+applyMode(startMode);
+
+setInterval(()=>{
+  if(MODE!=='tv') return;
+  tvClock();
+  loadState();          // apanha registos feitos noutro dispositivo/aba
+  renderTV();
+  drawMap('tvmap');
+  if(MODE==='phone') renderPhoneBoard();
+}, REFRESH_MS);
+setInterval(()=>{ if(MODE==='tv') tvClock(); }, 15000);
+
+</script>
+</body>
+</html>
