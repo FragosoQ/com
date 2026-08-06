@@ -508,6 +508,9 @@
         let mapMarkers = [];
         let tempGps = { lat: 40.5751, lng: -8.4442 };
 
+        // Cole o URL gerado na publicação do seu Google Apps Script aqui:
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHZjtdZjrzW9n50i1D9aeA45YhgD3cPHmx8_LKG0Z1nmON0KogO4emoXDTVJaRuAZ9/exec";
+
         function loadState() {
             const storedMembers = localStorage.getItem('somengil_presenca_members_v6');
             if (storedMembers) {
@@ -779,6 +782,13 @@
             member.obs = obs || (location === 'ferias' ? 'De Férias' : `Trabalho em ${location}`);
 
             const subMember = subId ? members.find(m => m.id === subId) : null;
+            const statusLabelMap = {
+                'fabrica': 'Fábrica',
+                'home': 'Home Office',
+                'viagem': 'Em Viagem',
+                'ferias': 'De Férias'
+            };
+
             historyLogs.unshift({
                 memberName: member.name,
                 status: location,
@@ -788,6 +798,24 @@
                 lng: member.lng.toFixed(4),
                 obs: member.obs
             });
+
+            // Envio automático para o Google Sheets via Google Apps Script
+            if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "SUA_WEB_APP_URL_AQUI") {
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify({
+                        time: member.lastUpdate,
+                        memberName: member.name,
+                        statusLabel: statusLabelMap[location] || location,
+                        subName: subMember ? subMember.name : '-',
+                        lat: member.lat.toFixed(4),
+                        lng: member.lng.toFixed(4),
+                        obs: member.obs
+                    })
+                }).catch(err => console.error("Erro ao enviar para Google Sheets:", err));
+            }
 
             saveState();
             renderSummaryMetrics();
