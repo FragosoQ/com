@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Equipa Comercial · Somengil</title>
+<title>BIZDEV Team · Somengil</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -431,6 +431,151 @@ html.tv #reg-sheet{zoom:clamp(1,.115vh,2.2)}
 #reg-slot h1{font-size:24px;margin:4px 0 2px}
 #reg-slot .sub{margin-bottom:14px}
 
+
+/* ── Planeamento: botões, modal e calendário ──────────── */
+.qr .qaction{flex-direction:column;gap:.8rem}
+.qr .reg-btn{
+  width:100%;flex-direction:row;gap:.7rem;font-size:1.3rem;
+  padding:1rem 1.2rem;border-radius:1rem;
+}
+.qr .reg-btn .ico{font-size:1.6rem}
+.qr .reg-btn.plan{
+  background:var(--orange);
+  box-shadow:0 .6rem 1.6rem color-mix(in srgb,var(--orange) 45%,transparent),inset 0 .06rem 0 rgba(255,255,255,.35);
+}
+
+#plan-scrim{
+  position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);padding:3vh 2vw;
+}
+#plan-scrim.on{display:flex;animation:fadein .25s ease}
+#plan-sheet{width:min(560px,94vw);max-height:92vh;overflow-y:auto;border-radius:26px;padding:0 0 22px}
+html.tv #plan-sheet{zoom:clamp(1,.115vh,2.2)}
+#plan-head{
+  position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;padding:18px 20px 14px;
+  background:inherit;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+}
+#plan-head h3{margin:0;font-size:19px;font-weight:700;letter-spacing:-.024em}
+#plan-head .ico{color:var(--orange);font-size:18px}
+#plan-head .x{margin-left:auto;width:32px;height:32px;border-radius:50%;background:var(--fill);color:var(--text-2);display:flex;align-items:center;justify-content:center;font-size:15px}
+#plan-body{padding:0 20px}
+
+input[type=text]{
+  margin-left:auto;max-width:64%;background:none;border:none;font:inherit;font-size:17px;
+  color:var(--text);text-align:right;padding:4px 0;min-width:0;
+}
+input[type=text]:focus{outline:none}
+input[type=text]::placeholder{color:var(--text-3)}
+
+.cal{padding:4px 0 10px}
+.cal-head{display:flex;align-items:center;gap:8px;padding:10px 12px}
+.cal-head b{flex:1;text-align:center;font-size:16px;font-weight:600;text-transform:capitalize;letter-spacing:-.02em}
+.cal-nav{width:32px;height:32px;border-radius:50%;background:var(--fill);color:var(--text-2);display:flex;align-items:center;justify-content:center;font-size:14px}
+.cal-nav:hover{background:var(--fill-2);color:var(--text)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:0 12px}
+.cal-grid .wd{font-size:11px;font-weight:500;color:var(--text-2);text-align:center;padding:2px 0 6px;text-transform:uppercase}
+.cal-grid button{aspect-ratio:1;border-radius:10px;font-size:15px;display:flex;align-items:center;justify-content:center;transition:background .15s,transform .12s}
+.cal-grid button:hover{background:var(--fill)}
+.cal-grid button:active{transform:scale(.92)}
+.cal-grid button.off{visibility:hidden}
+.cal-grid button.past{opacity:.28;pointer-events:none}
+.cal-grid button.wknd{color:var(--text-3)}
+.cal-grid button.hoje{box-shadow:inset 0 0 0 1.5px var(--blue)}
+.cal-grid button.sel{background:var(--orange);color:#fff;font-weight:600;box-shadow:0 3px 10px color-mix(in srgb,var(--orange) 45%,transparent)}
+.cal-foot{display:flex;align-items:center;gap:8px;padding:12px 14px 4px;flex-wrap:wrap}
+.cal-foot .cnt{font-size:13px;color:var(--text-2);margin-right:auto}
+.daychip{
+  display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;
+  background:color-mix(in srgb,var(--orange) 16%,transparent);color:var(--orange);
+  padding:3px 9px;border-radius:99px;
+}
+.cal-clear{font-size:13px;color:var(--blue)}
+
+
+/* ── Vista Mapa + Viagens planeadas ───────────────────── */
+#tvmap,.mapcard{cursor:pointer}
+.map-hint{
+  position:absolute;right:1rem;bottom:1rem;z-index:400;
+  display:flex;align-items:center;gap:.5rem;font-size:1.1rem;font-weight:500;
+  background:var(--g-soft);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  border:1px solid var(--g-brd);color:var(--text-2);padding:.4rem .9rem;border-radius:99rem;
+  pointer-events:none;
+}
+.tile:has(#tvmap){position:relative}
+
+#map-scrim{
+  position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding:3vh 2vw;
+}
+#map-scrim.on{display:flex;animation:fadein .25s ease}
+#map-sheet{
+  width:min(1500px,96vw);height:min(900px,90vh);border-radius:26px;overflow:hidden;
+  display:grid;grid-template-columns:1.35fr 1fr;
+}
+@media (max-width:900px){ #map-sheet{grid-template-columns:1fr;grid-template-rows:38% 1fr;height:92vh} }
+#big-map{width:100%;height:100%;background:var(--map-bg)}
+#trip-side{display:flex;flex-direction:column;min-height:0;border-left:1px solid var(--g-brd)}
+@media (max-width:900px){ #trip-side{border-left:none;border-top:1px solid var(--g-brd)} }
+#trip-head{display:flex;align-items:center;gap:10px;padding:16px 18px 12px}
+#trip-head h3{margin:0;font-size:18px;font-weight:700;letter-spacing:-.024em}
+#trip-head .ico{color:var(--orange);font-size:17px}
+#trip-head .x{margin-left:auto;width:32px;height:32px;border-radius:50%;background:var(--fill);color:var(--text-2);display:flex;align-items:center;justify-content:center;font-size:15px}
+#trip-head .x:hover{background:var(--fill-2);color:var(--text)}
+#trip-body{flex:1;min-height:0;overflow-y:auto;padding:0 18px 18px}
+
+.tcal-head{display:flex;align-items:center;gap:8px;padding:6px 0 10px}
+.tcal-head b{flex:1;text-align:center;font-size:16px;font-weight:600;text-transform:capitalize}
+.tcal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.tcal .wd{font-size:10px;font-weight:500;color:var(--text-2);text-align:center;padding:2px 0 4px;text-transform:uppercase}
+.tcal .d{
+  min-height:46px;border-radius:9px;padding:4px 3px 3px;background:var(--fill);
+  display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--text-2);
+}
+.tcal .d.off{background:transparent}
+.tcal .d.hoje{box-shadow:inset 0 0 0 1.5px var(--blue)}
+.tcal .d.tem{background:color-mix(in srgb,var(--orange) 18%,transparent)}
+.tcal .d .num{font-size:12px;font-weight:600;color:var(--text)}
+.tcal .d .dots{display:flex;flex-wrap:wrap;gap:2px;justify-content:center}
+.tcal .d .dots i{width:6px;height:6px;border-radius:50%;background:var(--orange);display:block}
+.tcal .d .mais{font-size:9px;color:var(--orange);font-weight:600}
+
+
+.trip-pin{
+  display:flex;align-items:center;gap:8px;transform:translate(-50%,-50%);
+  background:var(--surface);border:1px solid var(--g-brd);border-radius:99px;
+  padding:3px 13px 3px 3px;box-shadow:0 6px 18px rgba(0,0,0,.4);white-space:nowrap;
+}
+.trip-pin .faces{display:flex}
+.trip-pin .face{
+  position:relative;width:32px;height:32px;border-radius:50%;overflow:hidden;
+  border:2.5px solid var(--orange);background:var(--fill-2);flex:none;
+  box-shadow:0 0 0 1.5px var(--surface);
+}
+.trip-pin .face + .face{margin-left:-12px}
+.trip-pin .face img{position:relative;z-index:1;width:100%;height:100%;object-fit:cover;display:block}
+.trip-pin .face .ini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--text-2)}
+.trip-pin .face.mais{background:var(--orange);border-color:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.trip-pin .txt{display:flex;flex-direction:column;line-height:1.15}
+.trip-pin .txt b{font-size:12.5px;font-weight:700;letter-spacing:-.02em;color:var(--text)}
+.trip-pin .txt i{font-style:normal;font-size:10.5px;font-weight:600;color:var(--orange)}
+#trip-warn{font-size:11px;color:var(--text-3);padding:8px 2px 0;line-height:1.3}
+.tlist{margin-top:16px}
+.tsub{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin:12px 2px 6px}
+.tsub:first-child{margin-top:2px}
+.tlist h4{margin:0 0 8px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-2)}
+.trip{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;
+  background:var(--fill);margin-bottom:6px;
+}
+.trip .when{
+  flex:none;width:52px;text-align:center;font-size:11px;font-weight:600;color:var(--orange);
+  line-height:1.15;font-variant-numeric:tabular-nums;
+}
+.trip .m{flex:1;min-width:0}
+.trip .nm{font-size:14px;font-weight:600;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trip .sb{font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tempty{padding:24px 10px;text-align:center;font-size:13px;color:var(--text-2)}
+
 @media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation:none!important;transition:none!important} }
 </style>
 </head>
@@ -446,6 +591,7 @@ html.tv #reg-sheet{zoom:clamp(1,.115vh,2.2)}
   <symbol id="i-people" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M2.6 20.2a6.4 6.4 0 0 1 12.8 0"/><path d="M16.4 5a3.4 3.4 0 0 1 0 6.4"/><path d="M17.6 14.4a6.4 6.4 0 0 1 3.8 5.8"/></symbol>
   <symbol id="i-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21.4s6.6-6.3 6.6-11.2a6.6 6.6 0 1 0-13.2 0C5.4 15.1 12 21.4 12 21.4z"/><circle cx="12" cy="10" r="2.5"/></symbol>
   <symbol id="i-checkin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3.6h9.4a1.6 1.6 0 0 1 1.6 1.6v13.6a1.6 1.6 0 0 1-1.6 1.6H9"/><path d="M13.4 12H3.6"/><path d="M7.2 8.2 3.4 12l3.8 3.8"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="5" width="17.6" height="15.8" rx="2.6"/><path d="M3.2 9.6h17.6M8 3.2v3.4M16 3.2v3.4"/><circle cx="8.4" cy="13.6" r="1"/><circle cx="12" cy="13.6" r="1"/><circle cx="15.6" cy="13.6" r="1"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.4 6.4l11.2 11.2M17.6 6.4L6.4 17.6"/></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a8.6 8.6 0 1 0 11.1 11.1z"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 12.6l4.6 4.6L19.2 7.4"/></symbol>
@@ -457,7 +603,7 @@ html.tv #reg-sheet{zoom:clamp(1,.115vh,2.2)}
   <header class="tvbar">
     <img class="logo on-dark" src="https://res.cloudinary.com/dlkkjtgvy/image/upload/v1780388780/somengil_logo_white_ofh0xi.png" alt="Somengil" onerror="this.remove()">
     <img class="logo on-light" src="https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786032688/1_SOMENGIL_PNG_LOGO__p1z4co.png" alt="Somengil" onerror="this.remove()">
-    <h1>Equipa comercial</h1>
+    <h1>BIZDEV TEAM</h1>
     <span class="live"><i></i><span id="tv-live">Em direto</span></span>
     <div class="right">
       <div class="t" id="tv-clock">--:--</div>
@@ -473,7 +619,7 @@ html.tv #reg-sheet{zoom:clamp(1,.115vh,2.2)}
     <div class="col" id="col-ferias"></div>
 
     <aside class="rail">
-      <div class="tile" style="flex:1"><div id="tvmap"></div></div>
+      <div class="tile" style="flex:1" onclick="openMapModal()" title="Ver mapa e viagens planeadas"><div id="tvmap"></div><span class="map-hint">Ver viagens planeadas</span></div>
       <div class="tile qr">
         <div class="qscan">
           <div class="code" id="qr"><span class="fb">Defina o endereço em CHECKIN_URL</span></div>
@@ -486,6 +632,10 @@ html.tv #reg-sheet{zoom:clamp(1,.115vh,2.2)}
           <button class="reg-btn" onclick="openRegModal()">
             <svg class="ico"><use href="#i-checkin"/></svg>
             <span>Onboarding</span>
+          </button>
+          <button class="reg-btn plan" onclick="openPlanModal()">
+            <svg class="ico"><use href="#i-cal"/></svg>
+            <span>Planned</span>
           </button>
         </div>
       </div>
@@ -508,7 +658,7 @@ html.tv #reg-sheet{zoom:clamp(1,.115vh,2.2)}
 
   <!-- EQUIPA -->
   <section class="ph pv on" id="pv-equipa">
-    <h1>Equipa comercial</h1>
+    <h1>BIZDEV TEAM</h1>
     <div class="sub" id="ph-date">—</div>
 
     <div class="sumcard">
@@ -523,7 +673,7 @@ html.tv #reg-sheet{zoom:clamp(1,.115vh,2.2)}
   <section class="ph pv" id="pv-mapa">
     <h1>Mapa</h1>
     <div class="sub">Última posição registada</div>
-    <div class="mapcard"><div id="ph-map"></div></div>
+    <div class="mapcard" onclick="openMapModal()"><div id="ph-map"></div></div>
     <div class="lbl" style="margin-top:20px">Registos recentes</div>
     <div class="inset" id="ph-logs"></div>
   </section>
@@ -561,6 +711,7 @@ html.tv #reg-sheet{zoom:clamp(1,.115vh,2.2)}
 
         <button type="submit" class="cta">Confirmar registo</button>
       </form>
+      <button class="plain" onclick="openPlanModal()">Planear dias fora</button>
     </div>
 
     <div class="hide" id="ph-done">
@@ -599,11 +750,85 @@ html.tv #reg-sheet{zoom:clamp(1,.115vh,2.2)}
   </div>
 </div>
 
+<div id="map-scrim" onclick="if(event.target===this)closeMapModal()">
+  <div id="map-sheet" class="glass" role="dialog" aria-modal="true" aria-label="Mapa e viagens planeadas">
+    <div id="big-map"></div>
+    <div id="trip-side">
+      <div id="trip-head">
+        <svg class="ico"><use href="#i-cal"/></svg>
+        <h3>Viagens planeadas</h3>
+        <button class="x" onclick="closeMapModal()" aria-label="Fechar"><svg class="ico"><use href="#i-x"/></svg></button>
+      </div>
+      <div id="trip-body">
+        <div class="tcal-head">
+          <button class="cal-nav" onclick="tripMes(-1)" aria-label="Mês anterior">‹</button>
+          <b id="tcal-title">—</b>
+          <button class="cal-nav" onclick="tripMes(1)" aria-label="Mês seguinte">›</button>
+        </div>
+        <div class="tcal" id="tcal"></div>
+        <div id="trip-warn"></div>
+        <div class="tlist"><h4 id="tlist-title">Próximas viagens</h4><div id="tlist"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="plan-scrim" onclick="if(event.target===this)closePlanModal()">
+  <div id="plan-sheet" class="glass" role="dialog" aria-modal="true" aria-label="Planeamento de viagem">
+    <div id="plan-head">
+      <svg class="ico"><use href="#i-cal"/></svg>
+      <h3>Planeamento de viagem</h3>
+      <button class="x" onclick="closePlanModal()" aria-label="Fechar"><svg class="ico"><use href="#i-x"/></svg></button>
+    </div>
+    <div id="plan-body">
+      <div class="lbl" style="margin-top:4px">Quem</div>
+      <div class="inset"><div class="frow">
+        <label for="pl-member">Comercial</label>
+        <select id="pl-member" onchange="planFillSubs()"><option value="" disabled selected>Escolher</option></select>
+      </div></div>
+
+      <div class="lbl">Destino</div>
+      <div class="inset">
+        <div class="frow">
+          <label for="pl-client">Cliente</label>
+          <input type="text" id="pl-client" placeholder="Nome do cliente" autocomplete="off">
+        </div>
+        <div class="frow" style="border-top:.5px solid var(--sep)">
+          <label for="pl-country">País</label>
+          <select id="pl-country"><option value="" disabled selected>Escolher</option></select>
+        </div>
+      </div>
+
+      <div class="lbl">Dias fora</div>
+      <div class="inset cal">
+        <div class="cal-head">
+          <button class="cal-nav" onclick="planMes(-1)" aria-label="Mês anterior">‹</button>
+          <b id="cal-title">—</b>
+          <button class="cal-nav" onclick="planMes(1)" aria-label="Mês seguinte">›</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-foot">
+          <span class="cnt" id="cal-count">Nenhum dia selecionado</span>
+          <button class="cal-clear" onclick="planLimpar()">Limpar</button>
+        </div>
+        <div class="cal-foot" id="cal-chips" style="padding-top:0"></div>
+      </div>
+
+      <div class="lbl">Nota</div>
+      <div class="inset"><textarea id="pl-note" placeholder="Opcional — ex.: instalação da linha 3"></textarea></div>
+
+      <div class="alert" id="pl-alert"><svg class="ico" style="font-size:18px"><use href="#i-alert"/></svg><span id="pl-alert-text"></span></div>
+
+      <button class="cta" style="background:var(--orange)" onclick="submitPlan()">Guardar planeamento</button>
+    </div>
+  </div>
+</div>
+
 <button class="switch" id="switch" onclick="toggleMode()"></button>
 
 <script>
 /* ═══ Configuração ═══ */
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxnyJhIC-DP0ACA-e0KcLBJ0Nj3LBHxAonxAVwkekkZvD9mCYPFiP2zPmoxd1ZMPSZR/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyiCiUYnw08s2qs8YYSkEcdg30k6Q01riXBXrrRVyEggzDjWcMsNTji4uJ83IIy7mKd/exec";
 /* Endereço público desta página — é o que fica no código QR da TV.
    Deixe vazio para usar automaticamente o endereço atual. */
 const CHECKIN_URL = "";
@@ -631,7 +856,7 @@ const DEFAULT_MEMBERS = [
   {id:11,name:"Simão Ventura",status:"viagem",subId:null,metrics:{fabrica:9,home:2,viagem:15},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012805/Sim%C3%A3o_Ventura_Comercial_iso5zg.jpg",lat:38.7071,lng:-9.1355,lastUpdate:"2026-08-06 11:00",obs:"Demonstração técnica de equipamento"}
 ];
 
-let members=[], logs=[], maps={}, markers={}, gps={lat:40.5751,lng:-8.4442}, MODE='tv';
+let members=[], logs=[], planos=[], maps={}, markers={}, gps={lat:40.5751,lng:-8.4442}, MODE='tv';
 
 /* ═══ Estado ═══ */
 const store={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
@@ -826,8 +1051,10 @@ function showPhoneView(v){
   if(v==='equipa') renderPhoneBoard();
 }
 
+const ORDER_CHECKIN = ['fabrica','home','ferias'];   // viagem entra pelo planeamento
+
 function buildPicker(){
-  document.getElementById('picker').innerHTML = ORDER.map(k=>{
+  document.getElementById('picker').innerHTML = ORDER_CHECKIN.map(k=>{
     const st=STATUS[k];
     return `<button type="button" class="opt" id="opt-${k}" aria-pressed="false" onclick="pickWhere('${k}')">
       <span class="sq" style="--c:${st.c}"><svg class="ico" style="font-size:17px"><use href="#${st.icon}"/></svg></span>
@@ -839,7 +1066,7 @@ function buildPicker(){
 function pickWhere(k){
   hideAlert();
   document.getElementById('f-where').value=k;
-  ORDER.forEach(x=>document.getElementById('opt-'+x).setAttribute('aria-pressed',String(x===k)));
+  ORDER_CHECKIN.forEach(x=>document.getElementById('opt-'+x).setAttribute('aria-pressed',String(x===k)));
   document.getElementById('sub-block').hidden=(k!=='ferias');
   if(k==='ferias') fillSubs();
 }
@@ -873,7 +1100,7 @@ function backToForm(){
   document.getElementById('form').reset();
   document.getElementById('f-where').value='';
   document.getElementById('sub-block').hidden=true;
-  ORDER.forEach(x=>document.getElementById('opt-'+x).setAttribute('aria-pressed','false'));
+  ORDER_CHECKIN.forEach(x=>document.getElementById('opt-'+x).setAttribute('aria-pressed','false'));
   hideAlert(); renderPhoneBoard();
 }
 
@@ -961,7 +1188,7 @@ function backToFormSilent(){
   document.getElementById('form').reset();
   document.getElementById('f-where').value='';
   document.getElementById('sub-block').hidden=true;
-  ORDER.forEach(x=>document.getElementById('opt-'+x).setAttribute('aria-pressed','false'));
+  ORDER_CHECKIN.forEach(x=>document.getElementById('opt-'+x).setAttribute('aria-pressed','false'));
   hideAlert();
 }
 
@@ -978,11 +1205,12 @@ addEventListener('resize',()=>{
     if(want !== MODE) applyMode(want);     // ex.: tablet a rodar entre retrato e paisagem
   }, 250);
 });
-addEventListener('keydown',e=>{ if(e.key==='Escape') closeRegModal(); });
+addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeRegModal(); closePlanModal(); closeMapModal(); } });
 addEventListener('orientationchange',()=>setTimeout(()=>dispatchEvent(new Event('resize')),300));
 
 /* ═══ Google Sheets ═══ */
 const LABEL2KEY = Object.fromEntries(ORDER.map(k=>[STATUS[k].label,k]));
+const isoHoje = ()=>{const n=new Date();return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;};
 
 function setSyncNote(txt,ok){
   const el=document.getElementById('done-sub');
@@ -1007,56 +1235,399 @@ async function enviarParaSheet(payload){
   }
 }
 
-/** Lê a folha e reconstrói estados, contagens e histórico. */
-async function sincronizar(){
-  if(!GOOGLE_SCRIPT_URL) return false;
+/** Lê as duas folhas e reconstrói estados, contagens e histórico. */
+async function lerAccao(action){
+  if(!GOOGLE_SCRIPT_URL) return null;
   try{
-    const r = await fetch(GOOGLE_SCRIPT_URL+'?action=dados',{cache:'no-store'});
+    const r = await fetch(GOOGLE_SCRIPT_URL+'?action='+action,{cache:'no-store'});
     const d = await r.json();
-    if(!d || !Array.isArray(d.rows) || !d.rows.length) return false;
+    return (d && Array.isArray(d.rows)) ? d.rows : null;
+  }catch(err){ return null; }
+}
 
-    const norm = t=>String(t||'').trim().toLowerCase();
-    const acha = nome=>members.find(m=>norm(m.name)===norm(nome))
-                    || members.find(m=>norm(m.name).startsWith(norm(nome).split(' ')[0]));
+async function sincronizar(){
+  const [onb,plan] = await Promise.all([lerAccao('dados'), lerAccao('planeado')]);
+  if(onb===null && plan===null) return false;      // sem ligação: fica o que estiver local
 
-    // dias distintos por pessoa e por local — dois registos no mesmo dia contam 1
-    const dias = new Map();
-    const balde = id=>{
-      if(!dias.has(id)) dias.set(id,{fabrica:new Set(),home:new Set(),viagem:new Set(),ferias:new Set()});
-      return dias.get(id);
+  planos = plan || [];
+  aplicarDados(onb || [], planos);
+  saveState();
+  if(MODE==='tv'){ renderTV(); drawMap('tvmap'); } else { renderPhoneBoard(); if(maps['ph-map']) drawMap('ph-map'); }
+  if(document.getElementById('map-scrim').classList.contains('on')) renderTrips();
+  return true;
+}
+
+function aplicarDados(onb, plan){
+  const norm = t=>String(t||'').trim().toLowerCase();
+  const acha = nome=>members.find(m=>norm(m.name)===norm(nome))
+                  || members.find(m=>norm(m.name).startsWith(norm(nome).split(' ')[0]));
+
+  // ── onboarding: fábrica, home office e férias (dias distintos) ──
+  const balde = new Map();
+  const saco = id=>{
+    if(!balde.has(id)) balde.set(id,{fabrica:new Set(),home:new Set(),ferias:new Set()});
+    return balde.get(id);
+  };
+  onb.forEach(row=>{                                  // do mais antigo para o mais recente
+    const m = acha(row.memberName); if(!m) return;
+    const k = LABEL2KEY[row.statusLabel];
+    if(!k || k==='viagem') return;                    // viagem vem do planeamento, não daqui
+    saco(m.id)[k].add(String(row.time).split(' ')[0]);
+    m.status = k;
+    m.lastUpdate = row.time;
+    m.obs = row.obs || STATUS[k].label;
+    const sub = (row.subName && row.subName!=='-') ? acha(row.subName) : null;
+    m.subId = sub ? sub.id : null;
+    const la=parseFloat(row.lat), ln=parseFloat(row.lng);
+    if(!isNaN(la)&&!isNaN(ln)){ m.lat=la; m.lng=ln; }
+  });
+
+  // ── planning: dias de viagem do mês corrente + quem está fora hoje ──
+  const hoje = isoHoje(), mes = hoje.slice(0,7);
+  const viagemMes = new Map(), foraHoje = new Map();
+  plan.forEach(row=>{
+    const m = acha(row.memberName); if(!m) return;
+    const dia = diaISO(row.dia); if(!dia) return;
+    if(dia.startsWith(mes)){
+      if(!viagemMes.has(m.id)) viagemMes.set(m.id,new Set());
+      viagemMes.get(m.id).add(dia);
+    }
+    if(dia===hoje) foraHoje.set(m.id,row);
+  });
+
+  members.forEach(m=>{
+    const b = balde.get(m.id);
+    m.metrics = {
+      fabrica: b?b.fabrica.size:0,
+      home:    b?b.home.size:0,
+      ferias:  b?b.ferias.size:0,
+      viagem:  (viagemMes.get(m.id)||new Set()).size
     };
+    const t = foraHoje.get(m.id);
+    if(t){                                            // viagem planeada manda no dia
+      m.status='viagem';
+      m.obs = [t.cliente,t.pais].filter(Boolean).join(' · ') || t.obs || 'Em viagem';
+      m.lastUpdate = t.time || m.lastUpdate;
+      const sub = (t.subName && t.subName!=='-') ? acha(t.subName) : null;
+      if(sub) m.subId = sub.id;
+    }
+  });
 
-    d.rows.forEach(row=>{                      // do mais antigo para o mais recente
-      const m = acha(row.memberName); if(!m) return;
-      const k = LABEL2KEY[row.statusLabel]; if(!k) return;
-      balde(m.id)[k].add(String(row.time).split(' ')[0]);
-      m.status = k;
-      m.lastUpdate = row.time;
-      m.obs = row.obs || STATUS[k].label;
-      const sub = (row.subName && row.subName!=='-') ? acha(row.subName) : null;
-      m.subId = sub ? sub.id : null;
-      const la=parseFloat(row.lat), ln=parseFloat(row.lng);
-      if(!isNaN(la)&&!isNaN(ln)){ m.lat=la; m.lng=ln; }
+  logs = onb.slice().reverse()
+    .filter(row=>LABEL2KEY[row.statusLabel])
+    .map(row=>({
+      memberName:row.memberName, status:LABEL2KEY[row.statusLabel],
+      subName:row.subName||'-', time:row.time, lat:row.lat, lng:row.lng, obs:row.obs
+    }));
+}
+
+/* ═══ Planeamento ═══ */
+const planSel = new Set();          // dias escolhidos, em yyyy-mm-dd
+let planRef = new Date();           // mês visível no calendário
+
+const iso = d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const ddmm = t=>t.slice(8,10)+'/'+t.slice(5,7);
+
+function renderCal(){
+  const ano=planRef.getFullYear(), mes=planRef.getMonth();
+  const titulo=planRef.toLocaleDateString('pt-PT',{month:'long',year:'numeric'});
+  document.getElementById('cal-title').textContent=titulo;
+
+  const primeiro=new Date(ano,mes,1);
+  const desloca=(primeiro.getDay()+6)%7;              // semana começa à segunda
+  const nDias=new Date(ano,mes+1,0).getDate();
+  const hojeISO=iso(new Date());
+
+  let html=['S','T','Q','Q','S','S','D'].map(d=>`<div class="wd">${d}</div>`).join('');
+  for(let i=0;i<desloca;i++) html+='<button class="off" disabled></button>';
+  for(let dia=1;dia<=nDias;dia++){
+    const d=new Date(ano,mes,dia), t=iso(d), fds=[0,6].includes(d.getDay());
+    const cls=[fds?'wknd':'', t===hojeISO?'hoje':'', t<hojeISO?'past':'', planSel.has(t)?'sel':''].filter(Boolean).join(' ');
+    html+=`<button class="${cls}" onclick="planToggle('${t}')">${dia}</button>`;
+  }
+  document.getElementById('cal-grid').innerHTML=html;
+
+  const n=planSel.size;
+  document.getElementById('cal-count').textContent = n ? `${n} ${n===1?'dia selecionado':'dias selecionados'}` : 'Nenhum dia selecionado';
+  document.getElementById('cal-chips').innerHTML = [...planSel].sort().map(t=>`<span class="daychip">${ddmm(t)}</span>`).join('');
+}
+function planToggle(t){ planSel.has(t)?planSel.delete(t):planSel.add(t); planAlerta(''); renderCal(); }
+function planMes(n){ planRef=new Date(planRef.getFullYear(),planRef.getMonth()+n,1); renderCal(); }
+function planLimpar(){ planSel.clear(); renderCal(); }
+function planAlerta(txt){
+  const a=document.getElementById('pl-alert');
+  document.getElementById('pl-alert-text').textContent=txt;
+  a.classList.toggle('on',!!txt);
+}
+function planFillSubs(){ planAlerta(''); }
+
+function openPlanModal(){
+  document.getElementById('pl-member').innerHTML='<option value="" disabled selected>Escolher</option>'+
+    members.map(m=>`<option value="${m.id}">${esc(shortName(m.name))}</option>`).join('');
+  document.getElementById('pl-client').value='';
+  const selPais=document.getElementById('pl-country');
+  selPais.innerHTML='<option value="" disabled selected>Escolher</option>'+
+    PAISES_LISTA.map(p=>`<option value="${p}">${p}</option>`).join('');
+  document.getElementById('pl-note').value='';
+  planFillSubs(); planSel.clear(); planRef=new Date(); renderCal(); planAlerta('');
+  document.getElementById('plan-scrim').classList.add('on');
+}
+function closePlanModal(){ document.getElementById('plan-scrim').classList.remove('on'); }
+
+async function submitPlan(){
+  const id=parseInt(document.getElementById('pl-member').value);
+  const cliente=document.getElementById('pl-client').value.trim();
+  const pais=document.getElementById('pl-country').value.trim();
+  const nota=document.getElementById('pl-note').value.trim();
+
+  if(!id)          return planAlerta('Escolha o comercial.');
+  if(!cliente)     return planAlerta('Indique o cliente.');
+  if(!pais)        return planAlerta('Indique o país.');
+  if(!planSel.size)return planAlerta('Selecione pelo menos um dia no calendário.');
+
+  const m=members.find(x=>x.id===id);
+  const dias=[...planSel].sort();
+
+  planAlerta('');
+  const btn=document.querySelector('#plan-body .cta');
+  const txt=btn.textContent; btn.textContent='A guardar…'; btn.disabled=true;
+
+  try{
+    const r=await fetch(GOOGLE_SCRIPT_URL,{
+      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({
+        tipo:'planning', time:agoraISO(), memberName:m.name, statusLabel:STATUS.viagem.label,
+        pais, cliente, subName:'-', lat:'', lng:'',
+        obs:nota||`${cliente} · ${pais}`, dias
+      })
     });
+    const d=await r.json();
+    if(d && d.status==='success'){
+      btn.textContent=`${dias.length} dia(s) guardado(s) ✓`;
+      setTimeout(()=>{ btn.textContent=txt; btn.disabled=false; closePlanModal(); sincronizar(); },1600);
+      return;
+    }
+    planAlerta(d && d.message ? d.message : 'A folha devolveu erro.');
+  }catch(err){
+    planAlerta('Sem ligação à folha. Tente outra vez.');
+  }
+  btn.textContent=txt; btn.disabled=false;
+}
 
-    members.forEach(m=>{
-      const v = dias.get(m.id);
-      m.metrics = v
-        ? {fabrica:v.fabrica.size, home:v.home.size, viagem:v.viagem.size, ferias:v.ferias.size}
-        : {fabrica:0, home:0, viagem:0, ferias:0};
-    });
+function agoraISO(){
+  const n=new Date();
+  return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')} ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+}
 
-    logs = d.rows.slice().reverse()
-      .filter(row=>LABEL2KEY[row.statusLabel])
-      .map(row=>({
-        memberName:row.memberName, status:LABEL2KEY[row.statusLabel],
-        subName:row.subName||'-', time:row.time, lat:row.lat, lng:row.lng, obs:row.obs
-      }));
+/* ═══ Mapa + viagens planeadas ═══ */
+let tripRef = new Date();
 
-    saveState();
-    if(MODE==='tv'){ renderTV(); drawMap('tvmap'); } else { renderPhoneBoard(); if(maps['ph-map']) drawMap('ph-map'); }
-    return true;
-  }catch(err){ return false; }
+/* Coordenadas aproximadas por país, para colocar as viagens no mapa. */
+const PAISES = {
+  'portugal':[39.5,-8.0],'espanha':[40.4,-3.7],'spain':[40.4,-3.7],'frança':[46.6,2.4],'franca':[46.6,2.4],
+  'france':[46.6,2.4],'itália':[41.9,12.5],'italia':[41.9,12.5],'italy':[41.9,12.5],
+  'alemanha':[51.2,10.4],'germany':[51.2,10.4],'reino unido':[54.0,-2.0],'inglaterra':[52.5,-1.5],'uk':[54.0,-2.0],
+  'países baixos':[52.2,5.3],'paises baixos':[52.2,5.3],'holanda':[52.2,5.3],'bélgica':[50.6,4.6],'belgica':[50.6,4.6],
+  'polónia':[52.1,19.4],'polonia':[52.1,19.4],'suíça':[46.8,8.2],'suica':[46.8,8.2],'áustria':[47.6,14.1],'austria':[47.6,14.1],
+  'dinamarca':[56.1,9.5],'suécia':[60.1,15.6],'suecia':[60.1,15.6],'noruega':[61.0,9.0],'finlândia':[64.0,26.0],
+  'irlanda':[53.2,-8.0],'república checa':[49.8,15.5],'chéquia':[49.8,15.5],'hungria':[47.1,19.5],
+  'roménia':[45.9,25.0],'grécia':[39.0,22.0],'turquia':[39.0,35.2],'marrocos':[31.8,-7.1],'argélia':[28.0,2.6],
+  'tunísia':[34.0,9.5],'angola':[-11.2,17.9],'moçambique':[-18.7,35.5],'áfrica do sul':[-30.6,22.9],
+  'estados unidos':[39.8,-98.6],'eua':[39.8,-98.6],'usa':[39.8,-98.6],'canadá':[56.1,-106.3],'canada':[56.1,-106.3],
+  'méxico':[23.6,-102.6],'mexico':[23.6,-102.6],'brasil':[-14.2,-51.9],'brazil':[-14.2,-51.9],
+  'chile':[-35.7,-71.5],'argentina':[-38.4,-63.6],'colômbia':[4.6,-74.3],'peru':[-9.2,-75.0],
+  'emirados árabes unidos':[24.0,54.0],'emirados':[24.0,54.0],'arábia saudita':[23.9,45.1],'arabia saudita':[23.9,45.1],
+  'qatar':[25.4,51.2],'israel':[31.0,34.9],'índia':[20.6,79.0],'india':[20.6,79.0],
+  'japão':[36.2,138.3],'japao':[36.2,138.3],'china':[35.9,104.2],'coreia do sul':[36.5,127.9],
+  'singapura':[1.35,103.8],'tailândia':[15.9,100.99],'vietname':[14.1,108.3],'indonésia':[-0.8,113.9],
+  'austrália':[-25.3,133.8],'australia':[-25.3,133.8],'nova zelândia':[-40.9,174.9]
+};
+const semAcento = t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+const coordPais = p=>{
+  const t=String(p||'').trim().toLowerCase();
+  if(PAISES[t]) return PAISES[t];
+  const alvo=semAcento(t);
+  const chave=Object.keys(PAISES).find(k=>semAcento(k)===alvo);
+  return chave ? PAISES[chave] : null;
+};
+
+function acharMembro(nome){
+  const n=semAcento(nome); if(!n) return null;
+  return members.find(m=>semAcento(m.name)===n)
+      || members.find(m=>semAcento(m.name).split(' ')[0]===n.split(' ')[0])
+      || null;
+}
+
+/** Aceita "2026-08-19", "2026-08-19T00:00:00.000Z", "19/08/2026" ou Date. */
+function diaISO(v){
+  if(!v) return '';
+  const t=String(v).trim();
+  let m=t.match(/^(\d{4})-(\d{2})-(\d{2})/);            if(m) return `${m[1]}-${m[2]}-${m[3]}`;
+  m=t.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/);   if(m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  const d=new Date(t);
+  if(!isNaN(d)) return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  return '';
+}
+
+/* Nomes oficiais mostrados no formulário — todos têm coordenadas em PAISES. */
+const PAISES_LISTA = [
+  'Alemanha','Angola','Arábia Saudita','Argentina','Argélia','Austrália','Áustria','Bélgica','Brasil',
+  'Canadá','Chile','China','Colômbia','Coreia do Sul','Dinamarca','Emirados Árabes Unidos','Espanha',
+  'Estados Unidos','Finlândia','França','Grécia','Hungria','Índia','Indonésia','Irlanda','Israel',
+  'Itália','Japão','Marrocos','México','Moçambique','Noruega','Nova Zelândia','Países Baixos','Peru',
+  'Polónia','Portugal','Qatar','Reino Unido','República Checa','Roménia','Singapura','Suécia','Suíça',
+  'Tailândia','Tunísia','Turquia','Vietname','África do Sul'
+].sort((a,b)=>a.localeCompare(b,'pt'));
+
+function openMapModal(){
+  tripRef = new Date();
+  document.getElementById('map-scrim').classList.add('on');
+  renderTrips();
+  setTimeout(()=>drawTripMap(),120);
+  if(!planos.length) lerAccao('planeado').then(r=>{ if(r){ planos=r; renderTrips(); } });
+}
+function closeMapModal(){ document.getElementById('map-scrim').classList.remove('on'); }
+function tripMes(n){ tripRef=new Date(tripRef.getFullYear(),tripRef.getMonth()+n,1); renderTrips(); }
+
+function renderTrips(){
+  const ano=tripRef.getFullYear(), mes=tripRef.getMonth();
+  const titulo=tripRef.toLocaleDateString('pt-PT',{month:'long',year:'numeric'});
+  document.getElementById('tcal-title').textContent=titulo.charAt(0).toUpperCase()+titulo.slice(1);
+
+  // agrupar por dia
+  const porDia=new Map();
+  planos.forEach(r=>{
+    const dia=diaISO(r.dia); if(!dia) return;
+    if(!porDia.has(dia)) porDia.set(dia,[]);
+    porDia.get(dia).push(r);
+  });
+
+  const primeiro=new Date(ano,mes,1);
+  const desloca=(primeiro.getDay()+6)%7;
+  const nDias=new Date(ano,mes+1,0).getDate();
+  const hoje=isoHoje();
+
+  let html=['S','T','Q','Q','S','S','D'].map(d=>`<div class="wd">${d}</div>`).join('');
+  for(let i=0;i<desloca;i++) html+='<div class="d off"></div>';
+  for(let dia=1;dia<=nDias;dia++){
+    const t=`${ano}-${String(mes+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+    const lista=porDia.get(t)||[];
+    const pontos=lista.slice(0,4).map(()=>'<i></i>').join('');
+    const mais=lista.length>4?`<span class="mais">+${lista.length-4}</span>`:'';
+    const nomes=lista.map(r=>shortName(r.memberName)+(r.pais?` (${r.pais})`:'')).join('\n');
+    html+=`<div class="d ${lista.length?'tem':''} ${t===hoje?'hoje':''}" title="${esc(nomes)}">
+      <span class="num">${dia}</span><span class="dots">${pontos}</span>${mais}</div>`;
+  }
+  document.getElementById('tcal').innerHTML=html;
+  drawTripMap();
+
+  // lista: próximas viagens a partir de hoje
+  const futuras=planos
+    .filter(r=>diaISO(r.dia)>=hoje)
+    .sort((a,b)=>String(a.dia).localeCompare(String(b.dia)));
+
+  // juntar dias seguidos do mesmo comercial/cliente num só bloco
+  const blocos=[];
+  futuras.forEach(r=>{
+    const dia=diaISO(r.dia);
+    const ult=blocos[blocos.length-1];
+    if(ult && ult.memberName===r.memberName && ult.cliente===r.cliente && ult.pais===r.pais && seguinte(ult.fim)===dia){
+      ult.fim=dia; ult.n++;
+    } else blocos.push({...r,ini:dia,fim:dia,n:1});
+  });
+
+  const mesAtual = hoje.slice(0,7);
+  const nomeMes = new Date().toLocaleDateString('pt-PT',{month:'long'});
+  const doMes    = blocos.filter(b=>b.ini.startsWith(mesAtual));
+  const seguintes= blocos.filter(b=>!b.ini.startsWith(mesAtual));
+
+  const cartao = b=>`
+    <div class="trip">
+      <div class="when">${ddmm(b.ini)}${b.fim!==b.ini?`<br>${ddmm(b.fim)}`:''}</div>
+      <div class="m">
+        <div class="nm">${esc(shortName(b.memberName))}</div>
+        <div class="sb">${esc([b.cliente,b.pais].filter(Boolean).join(' · ')||b.obs||'—')}${b.n>1?` · ${b.n} dias`:''}</div>
+      </div>
+    </div>`;
+
+  document.getElementById('tlist-title').textContent = blocos.length ? 'Próximas viagens' : '';
+  document.getElementById('tlist').innerHTML = blocos.length ? [
+    doMes.length ? `<div class="tsub">Ainda em ${nomeMes}</div>` + doMes.map(cartao).join('') : '',
+    seguintes.length ? `<div class="tsub">Meses seguintes</div>` + seguintes.slice(0,12).map(cartao).join('') : ''
+  ].join('') : `<div class="tempty">Sem viagens planeadas.<br>Use o botão Planned para adicionar.</div>`;
+}
+/** Pins das viagens planeadas do mês que está a ser visto. */
+function drawTripMap(){
+  const box=document.getElementById('big-map'); if(!box) return;
+  if(typeof L==='undefined'){ box.innerHTML='<div style="height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-2);font-size:14px">Mapa indisponível</div>'; return; }
+
+  if(!maps['big-map']){
+    maps['big-map']=L.map('big-map',{zoomControl:true,scrollWheelZoom:false}).setView([40.5,-8.4],4);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap'}).addTo(maps['big-map']);
+    markers['big-map']=[];
+  } else maps['big-map'].invalidateSize();
+
+  const mp=maps['big-map'];
+  (markers['big-map']||[]).forEach(x=>mp.removeLayer(x)); markers['big-map']=[];
+
+  const mes=`${tripRef.getFullYear()}-${String(tripRef.getMonth()+1).padStart(2,'0')}`;
+  const doMes=planos.filter(r=>diaISO(r.dia).startsWith(mes));
+
+  // agrupar por país: um pin por destino, com quem lá vai
+  const porPais=new Map();
+  doMes.forEach(r=>{
+    const c=coordPais(r.pais); if(!c) return;
+    const chave=String(r.pais).trim();
+    if(!porPais.has(chave)) porPais.set(chave,{coord:c,pais:chave,dias:new Set(),quem:new Map()});
+    const g=porPais.get(chave);
+    g.dias.add(diaISO(r.dia));
+    const m=acharMembro(r.memberName);
+    const chaveQuem = m ? 'id'+m.id : r.memberName;
+    if(!g.quem.has(chaveQuem)) g.quem.set(chaveQuem,{membro:m,nome:shortName(r.memberName),clientes:new Set(),dias:new Set()});
+    const q=g.quem.get(chaveQuem);
+    q.clientes.add(String(r.cliente||'').trim());
+    q.dias.add(diaISO(r.dia));
+  });
+
+  const bounds=[];
+  porPais.forEach(g=>{
+    const gente=[...g.quem.values()];
+    const caras=gente.slice(0,3).map(q=>{
+      const m=q.membro;
+      return `<span class="face">${m&&m.photo?`<img src="${esc(m.photo)}" alt="" onerror="this.remove()">`:''}<span class="ini">${initials(q.nome)}</span></span>`;
+    }).join('');
+    const extra = gente.length>3 ? `<span class="face mais">+${gente.length-3}</span>` : '';
+
+    const icone=L.divIcon({className:'pin',
+      html:`<div class="trip-pin">
+              <span class="faces">${caras}${extra}</span>
+              <span class="txt"><b>${esc(g.pais)}</b><i>${g.dias.size} dia${g.dias.size===1?'':'s'}</i></span>
+            </div>`,
+      iconSize:[1,1], iconAnchor:[0,0]});
+    const mk=L.marker(g.coord,{icon:icone}).addTo(mp);
+
+    const linhas=gente.map(q=>{
+      const cl=[...q.clientes].filter(Boolean).join(', ');
+      return `<div style="margin-top:4px"><b>${esc(q.nome)}</b> · ${q.dias.size} dia${q.dias.size===1?'':'s'}${cl?` · ${esc(cl)}`:''}</div>`;
+    }).join('');
+    mk.bindPopup(`<div class="pop-n">${esc(g.pais)}</div>
+      <div class="pop-s" style="color:var(--orange)">${g.dias.size} dia(s) · ${gente.length} comercial(is)</div>
+      <div class="pop-o">${linhas}</div>`);
+    markers['big-map'].push(mk);
+    bounds.push(g.coord);
+  });
+
+  const semCoord=[...new Set(doMes.map(r=>String(r.pais||'').trim()).filter(p=>p && !coordPais(p)))];
+  const aviso=document.getElementById('trip-warn');
+  if(aviso) aviso.textContent = semCoord.length ? `Sem localização no mapa: ${semCoord.join(', ')}` : '';
+
+  if(bounds.length) mp.fitBounds(bounds,{padding:[60,60],maxZoom:6});
+  else mp.setView([40.5,-8.4],4);
+}
+
+function seguinte(t){
+  const d=new Date(t+'T00:00:00'); d.setDate(d.getDate()+1);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 /* ═══ Tema ═══ */
