@@ -95,7 +95,7 @@ html.tv body{
 .col-body{flex:1;min-height:0;overflow:hidden;padding:0 .8rem .8rem;display:flex;flex-direction:column;gap:.7rem}
 
 .p{
-  position:relative;display:flex;flex-direction:column;gap:1rem;
+  cursor:pointer;position:relative;display:flex;flex-direction:column;gap:1rem;
   padding:1.4rem 1.4rem 1.2rem;border-radius:1.4rem;background:var(--fill);
   height:15.6rem;flex:0 1 15.6rem;min-height:5.4rem;overflow:hidden;
 }
@@ -227,7 +227,7 @@ html.phone body{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
 .pgroup-head h2{margin:0;font-size:19px;font-weight:700;letter-spacing:-.022em}
 .pgroup-head .n{margin-left:auto;font-size:15px;color:var(--text-2);font-variant-numeric:tabular-nums}
 .plist{background:var(--surface);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
-.prow{position:relative;display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 14px;min-height:62px}
+.prow{cursor:pointer;position:relative;display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 14px;min-height:62px}
 .prow + .prow::before{content:"";position:absolute;left:70px;right:0;top:0;height:.5px;background:var(--sep)}
 .prow .av{position:relative;width:44px;height:44px;border-radius:50%;overflow:hidden;background:var(--fill-2);flex:none}
 .prow .av img{position:relative;z-index:1;width:100%;height:100%;object-fit:cover;display:block}
@@ -430,6 +430,37 @@ html.tv #reg-sheet{zoom:clamp(1,.115vh,2.2)}
 #reg-slot .sub{margin-bottom:14px}
 
 
+
+/* ── Calendário individual ────────────────────────────── */
+#pcal-scrim{
+  position:fixed;inset:0;z-index:205;display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);padding:3vh 2vw;
+}
+#pcal-scrim.on{display:flex;animation:fadein .25s ease}
+#pcal-sheet{width:min(520px,94vw);max-height:90vh;overflow-y:auto;border-radius:26px;padding:0 0 20px}
+html.tv #pcal-sheet{zoom:clamp(1,.115vh,2.2)}
+#pcal-head{
+  position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:12px;padding:18px 20px 14px;
+  background:inherit;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+}
+#pcal-head .av{position:relative;width:46px;height:46px;border-radius:50%;overflow:hidden;background:var(--fill-2);flex:none}
+#pcal-head .av img{position:relative;z-index:1;width:100%;height:100%;object-fit:cover;display:block}
+#pcal-head .av .ini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:var(--text-2)}
+#pcal-head h3{margin:0;font-size:18px;font-weight:700;letter-spacing:-.024em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pcal-sub{font-size:13px;color:var(--text-2);margin-top:1px}
+#pcal-head .x{margin-left:auto;width:32px;height:32px;border-radius:50%;background:var(--fill);color:var(--text-2);display:flex;align-items:center;justify-content:center;font-size:15px;flex:none}
+#pcal-body{padding:0 20px}
+#pcal-grid .d.fab{background:color-mix(in srgb,var(--green) 22%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--green) 45%,transparent)}
+#pcal-grid .d.via{background:color-mix(in srgb,var(--orange) 22%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--orange) 45%,transparent)}
+#pcal-grid .d .tag{font-size:9px;font-weight:600;letter-spacing:.02em}
+#pcal-legenda{display:flex;gap:16px;padding:12px 2px 4px;font-size:12px;color:var(--text-2)}
+#pcal-legenda span{display:flex;align-items:center;gap:6px}
+#pcal-legenda i{width:9px;height:9px;border-radius:3px;display:block}
+#pcal-lista{margin-top:6px}
+#pcal-lista .linha{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:.5px solid var(--sep);font-size:13px}
+#pcal-lista .linha b{color:var(--text);font-weight:600;min-width:96px;font-variant-numeric:tabular-nums}
+#pcal-lista .linha span{color:var(--text-2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#pcal-vazio{padding:20px 4px;font-size:13px;color:var(--text-2);text-align:center}
 /* ── Planeamento: botões, modal e calendário ──────────── */
 .qr .qaction{flex-direction:column;gap:.8rem}
 .qr .reg-btn{
@@ -437,6 +468,11 @@ html.tv #reg-sheet{zoom:clamp(1,.115vh,2.2)}
   padding:1rem 1.2rem;border-radius:1rem;
 }
 .qr .reg-btn .ico{font-size:1.6rem}
+
+.qr .reg-btn.site{
+  background:var(--green);
+  box-shadow:0 .6rem 1.6rem color-mix(in srgb,var(--green) 45%,transparent),inset 0 .06rem 0 rgba(255,255,255,.35);
+}
 .qr .reg-btn.plan{
   background:var(--orange);
   box-shadow:0 .6rem 1.6rem color-mix(in srgb,var(--orange) 45%,transparent),inset 0 .06rem 0 rgba(255,255,255,.35);
@@ -631,9 +667,13 @@ input[type=text]::placeholder{color:var(--text-3)}
             <svg class="ico"><use href="#i-checkin"/></svg>
             <span>Onboarding</span>
           </button>
-          <button class="reg-btn plan" onclick="openPlanModal()">
+          <button class="reg-btn plan" onclick="openPlanModal('viagem')">
             <svg class="ico"><use href="#i-cal"/></svg>
             <span>Planned</span>
+          </button>
+          <button class="reg-btn site" onclick="openPlanModal('fabrica')">
+            <svg class="ico"><use href="#i-factory"/></svg>
+            <span>Site</span>
           </button>
         </div>
       </div>
@@ -709,7 +749,8 @@ input[type=text]::placeholder{color:var(--text-3)}
 
         <button type="submit" class="cta">Confirmar registo</button>
       </form>
-      <button class="plain" onclick="openPlanModal()">Planear dias fora</button>
+      <button class="plain" onclick="openPlanModal('viagem')">Planear dias fora</button>
+      <button class="plain" onclick="openPlanModal('fabrica')">Planear dias na fábrica</button>
     </div>
 
     <div class="hide" id="ph-done">
@@ -771,11 +812,37 @@ input[type=text]::placeholder{color:var(--text-3)}
   </div>
 </div>
 
+<div id="pcal-scrim" onclick="if(event.target===this)closePersonCal()">
+  <div id="pcal-sheet" class="glass" role="dialog" aria-modal="true" aria-label="Planeamento pessoal">
+    <div id="pcal-head">
+      <div class="av" id="pcal-av"></div>
+      <div style="min-width:0">
+        <h3 id="pcal-nome">—</h3>
+        <div id="pcal-sub"></div>
+      </div>
+      <button class="x" onclick="closePersonCal()" aria-label="Fechar"><svg class="ico"><use href="#i-x"/></svg></button>
+    </div>
+    <div id="pcal-body">
+      <div class="tcal-head">
+        <button class="cal-nav" onclick="pcalMes(-1)" aria-label="Mês anterior">‹</button>
+        <b id="pcal-title">—</b>
+        <button class="cal-nav" onclick="pcalMes(1)" aria-label="Mês seguinte">›</button>
+      </div>
+      <div class="tcal" id="pcal-grid"></div>
+      <div id="pcal-legenda">
+        <span><i style="background:var(--green)"></i> Na fábrica</span>
+        <span><i style="background:var(--orange)"></i> Em viagem</span>
+      </div>
+      <div id="pcal-lista"></div>
+    </div>
+  </div>
+</div>
+
 <div id="plan-scrim" onclick="if(event.target===this)closePlanModal()">
   <div id="plan-sheet" class="glass" role="dialog" aria-modal="true" aria-label="Planeamento de viagem">
     <div id="plan-head">
       <svg class="ico"><use href="#i-cal"/></svg>
-      <h3>Planeamento de viagem</h3>
+      <h3 id="plan-title">Planeamento de viagem</h3>
       <button class="x" onclick="closePlanModal()" aria-label="Fechar"><svg class="ico"><use href="#i-x"/></svg></button>
     </div>
     <div id="plan-body">
@@ -785,6 +852,7 @@ input[type=text]::placeholder{color:var(--text-3)}
         <select id="pl-member" onchange="planFillSubs()"><option value="" disabled selected>Escolher</option></select>
       </div></div>
 
+      <div id="plan-destino">
       <div class="lbl">Destino</div>
       <div class="inset">
         <div class="frow">
@@ -796,8 +864,9 @@ input[type=text]::placeholder{color:var(--text-3)}
           <select id="pl-country"><option value="" disabled selected>Escolher</option></select>
         </div>
       </div>
+      </div>
 
-      <div class="lbl">Dias fora</div>
+      <div class="lbl" id="plan-dias-lbl">Dias fora</div>
       <div class="inset cal">
         <div class="cal-head">
           <button class="cal-nav" onclick="planMes(-1)" aria-label="Mês anterior">‹</button>
@@ -869,7 +938,7 @@ function equipaVazia(){
     id:p.id, name:p.name, photo:p.photo,
     status:null, subId:null,
     metrics:{fabrica:0,home:0,viagem:0,ferias:0},
-    lat:null, lng:null, lastUpdate:'', obs:'', plano:null
+    lat:null, lng:null, lastUpdate:'', obs:'', plano:null, planoFabrica:null
   }));
 }
 
@@ -923,7 +992,7 @@ function renderTV(){
       const sub=m.subId?members.find(x=>x.id===m.subId):null;
       const second = sub ? `<b>Substituído por ${esc(shortName(sub.name))}</b>` : esc(m.obs||st.sub);
       const diasViagem = (m.metrics&&m.metrics.viagem)||0;   // o contador é sempre dias Em viagem
-      return `<div class="p" style="--c:${st.c}">
+      return `<div class="p" style="--c:${st.c}" onclick="openPersonCal(${m.id})">
         <div class="ptop">
           ${avatarHtml(m)}
           <div class="m">
@@ -1096,7 +1165,7 @@ function renderPhoneBoard(){
     const rows=list.length?list.map(m=>{
       const sub=m.subId?members.find(x=>x.id===m.subId):null;
       const second=sub?`<b>Substituído por ${esc(shortName(sub.name))}</b>`:esc(m.obs||st.sub);
-      return `<div class="prow">
+      return `<div class="prow" onclick="openPersonCal(${m.id})">
         <div class="av" style="--c:${st.c}"><span class="ini">${initials(m.name)}</span>${m.photo?`<img src="${esc(m.photo)}" alt="" loading="lazy" onerror="this.remove()">`:''}</div>
         <div class="m"><div class="nm">${esc(shortName(m.name))}</div><div class="sb">${second}</div></div>
         <div class="tm">${marcaTempo(m)}</div>
@@ -1286,11 +1355,24 @@ addEventListener('resize',()=>{
     if(want !== MODE) applyMode(want);     // ex.: tablet a rodar entre retrato e paisagem
   }, 250);
 });
-addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeRegModal(); closePlanModal(); closeMapModal(); } });
+addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeRegModal(); closePlanModal(); closeMapModal(); closePersonCal(); } });
 addEventListener('orientationchange',()=>setTimeout(()=>dispatchEvent(new Event('resize')),300));
 
 /* ═══ Google Sheets ═══ */
 const LABEL2KEY = Object.fromEntries(ORDER.map(k=>[STATUS[k].label,k]));
+
+/* A coluna "Local de Trabalho" da folha pode vir escrita de várias maneiras
+   (maiúsculas, sem acentos, abreviada). Traduz tudo para a chave interna. */
+const LOCAL_ALIAS = {
+  'na fabrica':'fabrica','fabrica':'fabrica','site':'fabrica','instalacoes':'fabrica','somengil':'fabrica',
+  'home office':'home','homeoffice':'home','home':'home','remoto':'home','trabalho remoto':'home','teletrabalho':'home',
+  'em viagem':'viagem','viagem':'viagem','viagens':'viagem','travel':'viagem','visita a cliente':'viagem',
+  'de ferias':'ferias','ferias':'ferias','ausente':'ferias','holiday':'ferias'
+};
+const chaveLocal = t=>{
+  const k=String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase().replace(/\s+/g,' ');
+  return LOCAL_ALIAS[k] || null;
+};
 const isoHoje = ()=>{const n=new Date();return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;};
 
 function setSyncNote(txt,ok){
@@ -1326,11 +1408,20 @@ async function lerAccao(action){
   }catch(err){ return null; }
 }
 
+const DEBUG = new URLSearchParams(location.search).has('debug');
+
 async function sincronizar(){
   const [onb,plan] = await Promise.all([lerAccao('dados'), lerAccao('planeado')]);
   if(onb===null && plan===null) return false;      // sem ligação: fica o que estiver local
 
   planos = plan || [];
+  if(DEBUG){
+    console.log('onboarding:', (onb||[]).length, 'linhas');
+    console.log('planning:', planos.length, 'linhas');
+    const locais = [...new Set(planos.map(r=>r.statusLabel))];
+    console.log('locais encontrados no planning:', locais, '→', locais.map(chaveLocal));
+    console.log('exemplo de linha:', planos[0]);
+  }
   aplicarDados(onb || [], planos);
   saveState();
   if(MODE==='tv'){ renderTV(); drawMap('tvmap'); } else { renderPhoneBoard(); if(maps['ph-map']) drawMap('ph-map'); }
@@ -1351,7 +1442,7 @@ function aplicarDados(onb, plan){
   };
   onb.forEach(row=>{                                  // do mais antigo para o mais recente
     const m = acha(row.memberName); if(!m) return;
-    const k = LABEL2KEY[row.statusLabel];
+    const k = chaveLocal(row.statusLabel);
     if(!k || k==='viagem') return;                    // viagem vem do planeamento, não daqui
     saco(m.id)[k].add(String(row.time).split(' ')[0]);
     m.status = k;
@@ -1366,14 +1457,26 @@ function aplicarDados(onb, plan){
   // ── planning: dias de viagem do mês corrente + quem está fora hoje ──
   const hoje = isoHoje(), mes = hoje.slice(0,7);
   const viagemMes = new Map();     // id -> {dias:Set, linhas:[]}
+  const fabricaMes = new Map();
   plan.forEach(row=>{
     const m = acha(row.memberName); if(!m) return;
     const dia = diaISO(row.dia); if(!dia || !dia.startsWith(mes)) return;
-    if(!viagemMes.has(m.id)) viagemMes.set(m.id,{dias:new Set(),linhas:[]});
-    const v = viagemMes.get(m.id);
+    const alvo = ehFabrica(row) ? fabricaMes : (ehViagem(row) ? viagemMes : null);
+    if(!alvo) return;
+    if(!alvo.has(m.id)) alvo.set(m.id,{dias:new Set(),linhas:[]});
+    const v = alvo.get(m.id);
     v.dias.add(dia);
     v.linhas.push({...row, dia});
   });
+
+  const resumoPlano = (v,tipo)=>{
+    const dias=[...v.dias].sort();
+    const proximo = dias.find(d=>d>=hoje) || dias[dias.length-1];
+    const linha = v.linhas.find(l=>l.dia===proximo) || v.linhas[0];
+    return {tipo, ini:dias[0], fim:dias[dias.length-1], total:dias.length,
+            hoje:v.dias.has(hoje), proximo, dias,
+            cliente:linha.cliente||'', pais:linha.pais||'', linha};
+  };
 
   members.forEach(m=>{
     const b = balde.get(m.id);
@@ -1385,26 +1488,28 @@ function aplicarDados(onb, plan){
       viagem:  v?v.dias.size:0
     };
 
+    const f = fabricaMes.get(m.id);
     m.plano = null;
-    if(v){                                   // tem dias planeados este mês → coluna Em viagem
-      const dias = [...v.dias].sort();
-      const proximo = dias.find(d=>d>=hoje) || dias[dias.length-1];
-      const linha = v.linhas.find(l=>l.dia===proximo) || v.linhas[0];
-      m.plano = {
-        ini: dias[0], fim: dias[dias.length-1], total: dias.length,
-        hoje: v.dias.has(hoje), proximo,
-        cliente: linha.cliente || '', pais: linha.pais || ''
-      };
+    m.planoFabrica = f ? resumoPlano(f,'fabrica') : null;
+
+    if(f){                                   // dias planeados na fábrica este mês
+      m.plano = m.planoFabrica;
+      m.status = 'fabrica';
+      m.obs = f.linhas[0].obs || 'Presença planeada na fábrica';
+    }
+    if(v){                                   // viagem manda sobre a fábrica
+      const p = resumoPlano(v,'viagem');
+      m.plano = p;
       m.status = 'viagem';
-      m.obs = [linha.cliente, linha.pais].filter(Boolean).join(' · ') || linha.obs || 'Em viagem';
-      if(linha.time) m.lastUpdate = linha.time;
+      m.obs = [p.cliente, p.pais].filter(Boolean).join(' · ') || p.linha.obs || 'Em viagem';
+      if(p.linha.time) m.lastUpdate = p.linha.time;
     }
   });
 
   logs = onb.slice().reverse()
-    .filter(row=>LABEL2KEY[row.statusLabel])
+    .filter(row=>chaveLocal(row.statusLabel))
     .map(row=>({
-      memberName:row.memberName, status:LABEL2KEY[row.statusLabel],
+      memberName:row.memberName, status:chaveLocal(row.statusLabel),
       subName:row.subName||'-', time:row.time, lat:row.lat, lng:row.lng, obs:row.obs
     }));
 }
@@ -1449,7 +1554,21 @@ function planAlerta(txt){
 }
 function planFillSubs(){ planAlerta(''); }
 
-function openPlanModal(){
+let planTipo='viagem';   // 'viagem' (Planned) ou 'fabrica' (Site)
+
+function openPlanModal(tipo){
+  planTipo = (tipo==='fabrica') ? 'fabrica' : 'viagem';
+  const fab = planTipo==='fabrica';
+  document.getElementById('plan-title').textContent = fab ? 'Planeamento na fábrica' : 'Planeamento de viagem';
+  document.getElementById('plan-destino').hidden = fab;
+  document.getElementById('plan-dias-lbl').textContent = fab ? 'Dias na fábrica' : 'Dias fora';
+  const cta = document.querySelector('#plan-body .cta');
+  cta.style.background = fab ? 'var(--green)' : 'var(--orange)';
+  document.getElementById('plan-head').querySelector('.ico').style.color = fab ? 'var(--green)' : 'var(--orange)';
+  abrirPlan();
+}
+
+function abrirPlan(){
   document.getElementById('pl-member').innerHTML='<option value="" disabled selected>Escolher</option>'+
     members.map(m=>`<option value="${m.id}">${esc(shortName(m.name))}</option>`).join('');
   document.getElementById('pl-client').value='';
@@ -1468,10 +1587,11 @@ async function submitPlan(){
   const pais=document.getElementById('pl-country').value.trim();
   const nota=document.getElementById('pl-note').value.trim();
 
-  if(!id)          return planAlerta('Escolha o comercial.');
-  if(!cliente)     return planAlerta('Indique o cliente.');
-  if(!pais)        return planAlerta('Indique o país.');
-  if(!planSel.size)return planAlerta('Selecione pelo menos um dia no calendário.');
+  const fab = planTipo==='fabrica';
+  if(!id)                 return planAlerta('Escolha o comercial.');
+  if(!fab && !cliente)    return planAlerta('Indique o cliente.');
+  if(!fab && !pais)       return planAlerta('Indique o país.');
+  if(!planSel.size)       return planAlerta('Selecione pelo menos um dia no calendário.');
 
   const m=members.find(x=>x.id===id);
   const dias=[...planSel].sort();
@@ -1484,9 +1604,10 @@ async function submitPlan(){
     const r=await fetch(GOOGLE_SCRIPT_URL,{
       method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
       body:JSON.stringify({
-        tipo:'planning', time:agoraISO(), memberName:m.name, statusLabel:STATUS.viagem.label,
-        pais, cliente, subName:'-', lat:'', lng:'',
-        obs:nota||`${cliente} · ${pais}`, dias
+        tipo:'planning', time:agoraISO(), memberName:m.name,
+        statusLabel: fab ? STATUS.fabrica.label : STATUS.viagem.label,
+        pais: fab?'':pais, cliente: fab?'':cliente, subName:'-', lat:'', lng:'',
+        obs: nota || (fab ? 'Presença na fábrica' : `${cliente} · ${pais}`), dias
       })
     });
     const d=await r.json();
@@ -1531,6 +1652,9 @@ const PAISES = {
   'austrália':[-25.3,133.8],'australia':[-25.3,133.8],'nova zelândia':[-40.9,174.9]
 };
 const semAcento = t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+const ehViagem  = r=>chaveLocal(r.statusLabel)==='viagem';
+const ehFabrica = r=>chaveLocal(r.statusLabel)==='fabrica';
+
 const coordPais = p=>{
   const t=String(p||'').trim().toLowerCase();
   if(PAISES[t]) return PAISES[t];
@@ -1594,7 +1718,7 @@ function renderTrips(){
 
   // agrupar por dia
   const porDia=new Map();
-  planos.forEach(r=>{
+  planos.filter(ehViagem).forEach(r=>{
     const dia=diaISO(r.dia); if(!dia) return;
     if(!porDia.has(dia)) porDia.set(dia,[]);
     porDia.get(dia).push(r);
@@ -1621,7 +1745,7 @@ function renderTrips(){
 
   // lista: próximas viagens a partir de hoje
   const futuras=planos
-    .filter(r=>diaISO(r.dia)>=hoje)
+    .filter(r=>ehViagem(r) && diaISO(r.dia)>=hoje)
     .sort((a,b)=>String(a.dia).localeCompare(String(b.dia)));
 
   // juntar dias seguidos do mesmo comercial/cliente num só bloco
@@ -1669,7 +1793,7 @@ function drawTripMap(){
   (markers['big-map']||[]).forEach(x=>mp.removeLayer(x)); markers['big-map']=[];
 
   const mes=`${tripRef.getFullYear()}-${String(tripRef.getMonth()+1).padStart(2,'0')}`;
-  const doMes=planos.filter(r=>diaISO(r.dia).startsWith(mes));
+  const doMes=planos.filter(r=>ehViagem(r) && diaISO(r.dia).startsWith(mes));
 
   // agrupar por país: um pin por destino, com quem lá vai
   const porPais=new Map();
@@ -1726,6 +1850,85 @@ function drawTripMap(){
 function seguinte(t){
   const d=new Date(t+'T00:00:00'); d.setDate(d.getDate()+1);
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+/* ═══ Calendário individual ═══ */
+let pcalId=null, pcalRef=new Date();
+
+function openPersonCal(id){
+  const m=members.find(x=>x.id===id); if(!m) return;
+  pcalId=id; pcalRef=new Date();
+
+  document.getElementById('pcal-av').innerHTML =
+    `<span class="ini">${initials(m.name)}</span>${m.photo?`<img src="${esc(m.photo)}" alt="" onerror="this.remove()">`:''}`;
+  document.getElementById('pcal-nome').textContent = shortName(m.name);
+  document.getElementById('pcal-scrim').classList.add('on');
+  renderPersonCal();
+
+  if(!planos.length) lerAccao('planeado').then(r=>{ if(r){ planos=r; renderPersonCal(); } });
+}
+function closePersonCal(){ document.getElementById('pcal-scrim').classList.remove('on'); }
+function pcalMes(n){ pcalRef=new Date(pcalRef.getFullYear(),pcalRef.getMonth()+n,1); renderPersonCal(); }
+
+function renderPersonCal(){
+  const m=members.find(x=>x.id===pcalId); if(!m) return;
+  const ano=pcalRef.getFullYear(), mes=pcalRef.getMonth();
+  const chaveMes=`${ano}-${String(mes+1).padStart(2,'0')}`;
+  const titulo=pcalRef.toLocaleDateString('pt-PT',{month:'long',year:'numeric'});
+  document.getElementById('pcal-title').textContent=titulo.charAt(0).toUpperCase()+titulo.slice(1);
+
+  // dias planeados desta pessoa, por tipo
+  const meus = planos.filter(r=>{
+    const p=acharMembro(r.memberName);
+    return p && p.id===m.id;
+  });
+  const fab=new Map(), via=new Map();
+  meus.forEach(r=>{
+    const dia=diaISO(r.dia); if(!dia) return;
+    if(ehFabrica(r)) fab.set(dia,r);
+    else if(ehViagem(r)) via.set(dia,r);
+  });
+
+  const nFab=[...fab.keys()].filter(d=>d.startsWith(chaveMes)).length;
+  const nVia=[...via.keys()].filter(d=>d.startsWith(chaveMes)).length;
+  document.getElementById('pcal-sub').textContent =
+    `${nFab} dia${nFab===1?'':'s'} na fábrica · ${nVia} em viagem`;
+
+  const primeiro=new Date(ano,mes,1);
+  const desloca=(primeiro.getDay()+6)%7;
+  const nDias=new Date(ano,mes+1,0).getDate();
+  const hoje=isoHoje();
+
+  let html=['S','T','Q','Q','S','S','D'].map(d=>`<div class="wd">${d}</div>`).join('');
+  for(let i=0;i<desloca;i++) html+='<div class="d off"></div>';
+  for(let dia=1;dia<=nDias;dia++){
+    const t=`${chaveMes}-${String(dia).padStart(2,'0')}`;
+    const v=via.get(t), f=fab.get(t);
+    const cls=[v?'via':(f?'fab':''), t===hoje?'hoje':''].filter(Boolean).join(' ');
+    const marca = v ? '<span class="tag" style="color:var(--orange)">viagem</span>'
+                : f ? '<span class="tag" style="color:var(--green)">fábrica</span>' : '';
+    const dica = v ? [v.cliente,v.pais].filter(Boolean).join(' · ') : (f ? (f.obs||'Na fábrica') : '');
+    html+=`<div class="d ${cls}" title="${esc(dica)}"><span class="num">${dia}</span>${marca}</div>`;
+  }
+  document.getElementById('pcal-grid').innerHTML=html;
+
+  // lista do mês, agrupada por blocos seguidos
+  const doMes=[...new Set([...fab.keys(),...via.keys()])].filter(d=>d.startsWith(chaveMes)).sort();
+  const blocos=[];
+  doMes.forEach(d=>{
+    const tipo = via.has(d) ? 'viagem' : 'fabrica';
+    const r = via.get(d) || fab.get(d);
+    const desc = tipo==='viagem' ? ([r.cliente,r.pais].filter(Boolean).join(' · ')||'Em viagem') : (r.obs||'Na fábrica');
+    const ult=blocos[blocos.length-1];
+    if(ult && ult.tipo===tipo && ult.desc===desc && seguinte(ult.fim)===d){ ult.fim=d; ult.n++; }
+    else blocos.push({tipo,desc,ini:d,fim:d,n:1});
+  });
+
+  document.getElementById('pcal-lista').innerHTML = blocos.length ? blocos.map(b=>`
+    <div class="linha">
+      <b style="color:${b.tipo==='viagem'?'var(--orange)':'var(--green)'}">${ddmm(b.ini)}${b.fim!==b.ini?` – ${ddmm(b.fim)}`:''}</b>
+      <span>${esc(b.desc)}</span>
+    </div>`).join('') : `<div id="pcal-vazio">Sem planeamento neste mês.</div>`;
 }
 
 /* ═══ Tema ═══ */
