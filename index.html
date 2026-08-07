@@ -21,7 +21,6 @@
   --sep:rgba(84,84,88,.65);
   --bar:rgba(29,29,31,.82);
   --glow-a:rgba(10,132,255,.13); --glow-b:rgba(48,209,88,.07);
-  --tile:invert(1) hue-rotate(180deg) saturate(.45) brightness(.82);
   --shadow:none;
   --map-bg:#242427;
   color-scheme:dark;
@@ -34,7 +33,6 @@ html[data-theme="light"]{
   --sep:rgba(60,60,67,.20);
   --bar:rgba(249,249,249,.82);
   --glow-a:rgba(0,122,255,.10); --glow-b:rgba(52,199,89,.08);
-  --tile:saturate(.55) brightness(1.03) contrast(.96);
   --shadow:0 1px 3px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.05);
   --map-bg:#E9E9EC;
   color-scheme:light;
@@ -120,7 +118,7 @@ html.tv body{
 .tile{background:var(--surface);border-radius:1.6rem;overflow:hidden;display:flex;flex-direction:column;min-height:0;box-shadow:var(--shadow)}
 #tvmap{flex:1;min-height:0;background:var(--map-bg)}
 .leaflet-container{background:var(--map-bg);font-family:inherit}
-.leaflet-tile{filter:var(--tile)}
+/* tiles: usamos mapas já escuros/claros em vez de filtros CSS (Tizen não os aplica) */
 .leaflet-control-attribution{background:transparent!important;color:var(--text-3)!important;font-size:.85rem!important}
 .leaflet-control-attribution a{color:var(--text-2)!important}
 .pin{background:none!important;border:none!important}
@@ -971,6 +969,41 @@ function pinFor(m){
 }
 const FABRICA = [40.5751,-8.4442];   // Somengil, Aveiro
 
+/* ── Tiles ────────────────────────────────────────────────────────────
+   Em vez de escurecer o OpenStreetMap com filter:invert() — que os
+   browsers antigos das TVs Samsung/Tizen ignoram, deixando o mapa
+   branco — usamos mapas CARTO já desenhados em escuro e em claro.     */
+const tiles = {};
+const TILES = {
+  dark : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  osm  : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+};
+const temaAtual = ()=> document.documentElement.getAttribute('data-theme')==='light' ? 'light' : 'dark';
+
+function criarTiles(mapa,id){
+  const layer = L.tileLayer(TILES[temaAtual()],{
+    maxZoom:19, subdomains:'abcd', crossOrigin:true,
+    attribution:'&copy; OpenStreetMap &copy; CARTO'
+  }).addTo(mapa);
+
+  let falhas=0;
+  layer.on('tileerror',()=>{                       // sem CARTO, volta ao OSM
+    if(++falhas===4 && layer._url!==TILES.osm){
+      layer.setUrl(TILES.osm);
+      layer.options.subdomains='abc';
+    }
+  });
+  tiles[id]=layer;
+  return layer;
+}
+
+/** Troca o mapa claro/escuro quando o tema muda. */
+function actualizarTiles(){
+  const url = TILES[temaAtual()];
+  Object.values(tiles).forEach(l=>{ if(l._url!==TILES.osm) l.setUrl(url); });
+}
+
 /** Espalha pins que cairiam no mesmo ponto, de forma estável por pessoa. */
 function afasta(p,id){
   const a = id * 2.39996;                         // ângulo de ouro
@@ -1001,7 +1034,7 @@ function drawMap(id){
     maps[id]=L.map(id, tv
       ? {zoomControl:false,attributionControl:true,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,keyboard:false}
       : {zoomControl:true,scrollWheelZoom:false}).setView([40.57,-8.44],5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap'}).addTo(maps[id]);
+    criarTiles(maps[id], id);
     markers[id]=[];
   } else maps[id].invalidateSize();
   const m0=maps[id];
@@ -1628,7 +1661,7 @@ function drawTripMap(){
 
   if(!maps['big-map']){
     maps['big-map']=L.map('big-map',{zoomControl:true,scrollWheelZoom:false}).setView([40.5,-8.4],4);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap'}).addTo(maps['big-map']);
+    criarTiles(maps['big-map'],'big-map');
     markers['big-map']=[];
   } else maps['big-map'].invalidateSize();
 
@@ -1699,6 +1732,7 @@ function seguinte(t){
 function setTheme(t){
   document.documentElement.setAttribute('data-theme',t);
   store.set('somengil_tema',t);
+  if(typeof actualizarTiles==='function') actualizarTiles();
 }
 function toggleTheme(){
   setTheme(document.documentElement.getAttribute('data-theme')==='light'?'dark':'light');
