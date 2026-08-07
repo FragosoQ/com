@@ -648,9 +648,9 @@ input[type=text]::placeholder{color:var(--text-3)}
 
   <div class="tvgrid">
     <div class="col" id="col-fabrica"></div>
-    <div class="col" id="col-home"></div>
     <div class="col" id="col-viagem"></div>
     <div class="col" id="col-ferias"></div>
+    <div class="col" id="col-home"></div>
 
     <aside class="rail">
       <div class="tile" style="flex:1" onclick="openMapModal()" title="Ver mapa e viagens planeadas"><div id="tvmap"></div><span class="map-hint">Ver viagens planeadas</span></div>
@@ -907,7 +907,7 @@ const STATUS = {
   viagem: {label:'Em viagem',  short:'Em viagem',  sub:'Visita a cliente',     icon:'i-plane',   c:'var(--orange)'},
   ferias: {label:'De férias',  short:'De férias',  sub:'Ausente',              icon:'i-sun',     c:'var(--purple)'}
 };
-const ORDER = ['fabrica','home','viagem','ferias'];
+const ORDER = ['fabrica','viagem','ferias','home'];   // ordem em que as colunas aparecem
 
 /* ── Equipa: só nome e foto. Estado, dias e posição vêm todos da folha. ── */
 const EQUIPA = [
