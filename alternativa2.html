@@ -891,8 +891,10 @@ function submitCheckin(e){
   const m=members.find(x=>x.id===id);
   if(!m) return showAlert('Não encontrámos esse nome na lista.');
 
+  const repetido = isToday(m.lastUpdate) && m.status===where;   // já tinha registado isto hoje
   m.status=where; m.subId=subId;
-  m.metrics[where]=(m.metrics[where]||0)+1;
+  if(!m.metrics) m.metrics={fabrica:0,home:0,viagem:0,ferias:0};
+  if(!repetido) m.metrics[where]=(m.metrics[where]||0)+1;
   m.lat=gps.lat+(Math.random()-.5)*0.002;
   m.lng=gps.lng+(Math.random()-.5)*0.002;
   const n=new Date();
@@ -1013,15 +1015,21 @@ async function sincronizar(){
     const d = await r.json();
     if(!d || !Array.isArray(d.rows) || !d.rows.length) return false;
 
-    members.forEach(m=>{ m.metrics={fabrica:0,home:0,viagem:0,ferias:0}; });
     const norm = t=>String(t||'').trim().toLowerCase();
     const acha = nome=>members.find(m=>norm(m.name)===norm(nome))
                     || members.find(m=>norm(m.name).startsWith(norm(nome).split(' ')[0]));
 
+    // dias distintos por pessoa e por local — dois registos no mesmo dia contam 1
+    const dias = new Map();
+    const balde = id=>{
+      if(!dias.has(id)) dias.set(id,{fabrica:new Set(),home:new Set(),viagem:new Set(),ferias:new Set()});
+      return dias.get(id);
+    };
+
     d.rows.forEach(row=>{                      // do mais antigo para o mais recente
       const m = acha(row.memberName); if(!m) return;
       const k = LABEL2KEY[row.statusLabel]; if(!k) return;
-      m.metrics[k] = (m.metrics[k]||0)+1;
+      balde(m.id)[k].add(String(row.time).split(' ')[0]);
       m.status = k;
       m.lastUpdate = row.time;
       m.obs = row.obs || STATUS[k].label;
@@ -1029,6 +1037,13 @@ async function sincronizar(){
       m.subId = sub ? sub.id : null;
       const la=parseFloat(row.lat), ln=parseFloat(row.lng);
       if(!isNaN(la)&&!isNaN(ln)){ m.lat=la; m.lng=ln; }
+    });
+
+    members.forEach(m=>{
+      const v = dias.get(m.id);
+      m.metrics = v
+        ? {fabrica:v.fabrica.size, home:v.home.size, viagem:v.viagem.size, ferias:v.ferias.size}
+        : {fabrica:0, home:0, viagem:0, ferias:0};
     });
 
     logs = d.rows.slice().reverse()
