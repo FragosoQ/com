@@ -924,7 +924,7 @@ function renderTV(){
     const rows = list.length ? list.map(m=>{
       const sub=m.subId?members.find(x=>x.id===m.subId):null;
       const second = sub ? `<b>Substituído por ${esc(shortName(sub.name))}</b>` : esc(m.obs||st.sub);
-      const dias = m.metrics[k]||0;
+      const diasViagem = (m.metrics&&m.metrics.viagem)||0;   // o contador é sempre dias Em viagem
       return `<div class="p" style="--c:${st.c}">
         <div class="ptop">
           ${avatarHtml(m)}
@@ -941,7 +941,7 @@ function renderTV(){
             <i class="${k==='viagem'?'act':''}" style="flex:${(m.metrics.viagem||0)+.2};background:var(--orange)"></i>
             <i class="${k==='ferias'?'act':''}" style="flex:${(m.metrics.ferias||0)+.2};background:var(--purple)"></i>
           </div>
-          <span class="days">${dias} ${dias===1?'dia':'dias'}</span>
+          <span class="days">${diasViagem} ${diasViagem===1?'dia':'dias'}</span>
         </div>
       </div>`;
     }).join('') : `<div class="col-empty">Sem registos</div>`;
@@ -969,6 +969,29 @@ function pinFor(m){
     html:`<div class="disc" style="--c:${(STATUS[m.status]||STATUS.fabrica).c}"><span class="ini">${initials(m.name)}</span>${m.photo?`<img src="${esc(m.photo)}" alt="" onerror="this.remove()">`:''}</div>`,
     iconSize:[40,40], iconAnchor:[20,20]});
 }
+const FABRICA = [40.5751,-8.4442];   // Somengil, Aveiro
+
+/** Espalha pins que cairiam no mesmo ponto, de forma estável por pessoa. */
+function afasta(p,id){
+  const a = id * 2.39996;                         // ângulo de ouro
+  return [ p[0] + Math.cos(a)*0.06, p[1] + Math.sin(a)*0.09 ];
+}
+
+/**
+ * Onde pôr cada pessoa no mapa principal:
+ *  Em viagem  → país do planeamento
+ *  restantes  → GPS do check-in; sem GPS, a fábrica
+ */
+function posicaoDe(m){
+  if(!m.status) return null;
+  if(m.status==='viagem' && m.plano){
+    const c = coordPais(m.plano.pais);
+    if(c) return afasta(c,m.id);
+  }
+  if(m.lat && m.lng) return [m.lat,m.lng];
+  return afasta(FABRICA,m.id);
+}
+
 function drawMap(id){
   const box=document.getElementById(id);
   if(!box) return;
@@ -984,8 +1007,11 @@ function drawMap(id){
   const m0=maps[id];
   (markers[id]||[]).forEach(x=>m0.removeLayer(x)); markers[id]=[];
   const b=[];
-  members.forEach(m=>{ if(!m.lat||!m.lng||!m.status) return;
-    markers[id].push(L.marker([m.lat,m.lng],{icon:pinFor(m),interactive:!tv}).addTo(m0)); b.push([m.lat,m.lng]); });
+  members.forEach(m=>{
+    const pos = posicaoDe(m); if(!pos) return;
+    markers[id].push(L.marker(pos,{icon:pinFor(m),interactive:!tv}).addTo(m0));
+    b.push(pos);
+  });
   if(b.length) m0.fitBounds(b,{padding:[35,35],maxZoom:9});
 }
 
