@@ -1424,12 +1424,26 @@ async function lerAccao(action){
 
 const DEBUG = new URLSearchParams(location.search).has('debug');
 
+function estadoLigacao(ok,detalhe){
+  const txt=document.getElementById('tv-live');
+  const pil=document.querySelector('.tvbar .live');
+  if(!txt||!pil) return;
+  txt.textContent = ok ? 'Em direto' : (detalhe||'Sem ligação à folha');
+  pil.querySelector('i').style.background = ok ? 'var(--green)' : 'var(--red)';
+  pil.style.color = ok ? 'var(--text-2)' : 'var(--red)';
+}
+
 async function sincronizar(){
   const [onb,plan,vis] = await Promise.all([lerAccao('dados'), lerAccao('planeado'), lerAccao('visitas')]);
-  if(onb===null && plan===null && vis===null) return false;   // sem ligação: fica o que estiver local
+  if(onb===null && plan===null && vis===null){                // sem ligação: fica o que estiver local
+    estadoLigacao(false, location.protocol==='file:' ? 'Abra por http, não por ficheiro' : 'Sem ligação à folha');
+    return false;
+  }
+  estadoLigacao(true);
 
-  planos = plan || [];
-  visitas = vis || [];
+  // uma folha que falhe não deve apagar a coluna: fica o último bom valor
+  planos  = plan || planos;
+  visitas = vis  || visitas;
   if(DEBUG){
     console.log('onboarding:', (onb||[]).length, 'linhas');
     console.log('planning:', planos.length, 'linhas');
