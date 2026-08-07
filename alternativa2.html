@@ -15,7 +15,7 @@
 /* ═══ TEMA (claro / escuro) ═══ */
 :root,html[data-theme="dark"]{
   --blue:#0A84FF; --green:#30D158; --orange:#FF9F0A; --purple:#BF5AF2; --red:#FF453A;
-  --bg:#000000; --surface:#1C1C1E;
+  --bg:#1D1D1F; --surface:#2C2C2E;
   --fill:rgba(120,120,128,.18); --fill-2:rgba(120,120,128,.32);
   --text:#FFFFFF; --text-2:rgba(235,235,245,.60); --text-3:rgba(235,235,245,.32);
   --sep:rgba(84,84,88,.65);
@@ -23,7 +23,7 @@
   --glow-a:rgba(10,132,255,.13); --glow-b:rgba(48,209,88,.07);
   --tile:invert(1) hue-rotate(180deg) saturate(.45) brightness(.82);
   --shadow:none;
-  --map-bg:#111;
+  --map-bg:#242427;
   color-scheme:dark;
 }
 html[data-theme="light"]{
@@ -67,6 +67,7 @@ html.tv body{
 
 .tvbar{display:flex;align-items:center;gap:1.6rem;flex:none}
 .tvbar .logo{height:2.9rem;width:auto;object-fit:contain}
+.tvbar .logo.on-light{height:3.48rem}   /* +20% no tema claro */
 .tvbar .logo.on-light{height:3.48rem}   /* logótipo claro +20% */
 .tvbar h1{margin:0;font-size:2.4rem;font-weight:600;letter-spacing:-.03em}
 .tvbar .live{
@@ -127,12 +128,12 @@ html.tv body{
 .pin .disc img{position:relative;z-index:1;width:100%;height:100%;object-fit:cover;display:block}
 .pin .disc .ini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:600;color:var(--text-2)}
 
-.qr{flex:none;display:flex;align-items:center;gap:1.3rem;padding:1.3rem}
-.qr .code{width:9.5rem;height:9.5rem;border-radius:1rem;background:#fff;padding:.6rem;flex:none;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.qr{flex:none;display:flex;flex-direction:row;align-items:stretch;gap:0;padding:0}
+.qr .code{width:8.8rem;height:8.8rem;border-radius:.9rem;background:#fff;padding:.55rem;flex:none;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .qr .code img,.qr .code canvas{width:100%!important;height:100%!important;display:block}
 .qr .code .fb{font-size:.9rem;color:#333;text-align:center;line-height:1.2;word-break:break-all;padding:.3rem}
-.qr h3{margin:0 0 .45rem;font-size:1.7rem;font-weight:600;letter-spacing:-.025em}
-.qr p{margin:0;font-size:1.25rem;line-height:1.35;color:var(--text-2)}
+.qr h3{margin:0;font-size:1.5rem;font-weight:700;letter-spacing:-.028em}
+.qr p{margin:0;font-size:1.15rem;line-height:1.3;color:var(--text-2)}
 
 .feed{flex:none;padding:1.1rem 1.3rem 1.2rem}
 .feed h3{margin:0 0 .8rem;font-size:1.35rem;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em}
@@ -150,6 +151,7 @@ html.phone body{font-size:17px;line-height:1.35;padding-bottom:calc(24px + env(s
 .ph-nav{position:sticky;top:0;z-index:20;background:var(--bar);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px)}
 .ph-nav .in{display:flex;align-items:center;gap:10px;height:52px;max-width:520px;margin:0 auto;padding:0 16px}
 .ph-nav img{height:22px;width:auto;object-fit:contain}
+.ph-nav img.on-light{height:26px}   /* +20% no tema claro */
 .ph-nav img.on-light{height:26.4px}
 .ph-nav .now{margin-left:auto;font-size:14px;color:var(--text-2);font-variant-numeric:tabular-nums}
 .ph-nav .theme{width:34px;height:34px;border-radius:50%;background:var(--fill);color:var(--text-2);display:flex;align-items:center;justify-content:center;font-size:17px;flex:none;transition:transform .18s var(--ease)}
@@ -267,7 +269,6 @@ html.phone body{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
 }
 @media (max-width:620px){
   .tvgrid{grid-template-columns:1fr}
-  .qr{flex-direction:column;text-align:center}
 }
 
 /* ── Telemóvel: recortes de ecrã e ecrãs pequenos ─────── */
@@ -282,10 +283,160 @@ html.phone body{overflow-x:hidden}
   .opt .s{display:none}
 }
 
+
+
+/* ── Máquina MWS: pano de fundo encostado à esquerda ──── */
+#mws{
+  position:fixed;left:0;bottom:0;z-index:0;
+  height:185vh;width:auto;max-width:145vw;object-fit:contain;object-position:left bottom;
+  pointer-events:none;user-select:none;
+  opacity:.5;
+  -webkit-mask-image:linear-gradient(to right,#000 55%,transparent 100%),linear-gradient(to top,#000 62%,transparent 100%);
+  -webkit-mask-composite:source-in;
+  mask-image:linear-gradient(to right,#000 55%,transparent 100%),linear-gradient(to top,#000 62%,transparent 100%);
+  mask-composite:intersect;
+}
+html[data-theme="light"] #mws{opacity:.42}
+html.phone #mws{display:none}
+.tvroot{position:relative;z-index:1}
+@media (max-width:1100px){ #mws{display:none} }
+
+/* ══════════ LIQUID GLASS ══════════ */
+:root,html[data-theme="dark"]{
+  --g-bg:linear-gradient(148deg,rgba(255,255,255,.13) 0%,rgba(255,255,255,.05) 46%,rgba(255,255,255,.02) 100%);
+  --g-brd:rgba(255,255,255,.16);
+  --g-hi:rgba(255,255,255,.42);
+  --g-sh:0 1.2rem 3rem rgba(0,0,0,.45);
+  --g-in:inset 0 .06rem 0 rgba(255,255,255,.22), inset 0 -.06rem 0 rgba(255,255,255,.05);
+  --g-soft:linear-gradient(148deg,rgba(255,255,255,.07),rgba(255,255,255,.02));
+}
+html[data-theme="light"]{
+  --g-bg:linear-gradient(148deg,rgba(255,255,255,.78) 0%,rgba(255,255,255,.55) 48%,rgba(255,255,255,.42) 100%);
+  --g-brd:rgba(255,255,255,.85);
+  --g-hi:rgba(255,255,255,.95);
+  --g-sh:0 1rem 2.4rem rgba(31,45,61,.14);
+  --g-in:inset 0 .06rem 0 rgba(255,255,255,.9), inset 0 -.06rem 0 rgba(255,255,255,.35);
+  --g-soft:linear-gradient(148deg,rgba(255,255,255,.55),rgba(255,255,255,.32));
+}
+
+.glass{
+  position:relative;
+  background:var(--g-bg);
+  -webkit-backdrop-filter:blur(30px) saturate(190%);
+  backdrop-filter:blur(30px) saturate(190%);
+  border:1px solid var(--g-brd);
+  box-shadow:var(--g-sh),var(--g-in);
+}
+/* reflexo especular no topo */
+.glass::after{
+  content:"";position:absolute;left:12%;right:12%;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--g-hi),transparent);
+  pointer-events:none;border-radius:1px;
+}
+.glass-soft{
+  background:var(--g-soft);
+  -webkit-backdrop-filter:blur(14px) saturate(150%);
+  backdrop-filter:blur(14px) saturate(150%);
+  border:1px solid var(--g-brd);
+}
+
+/* o vidro precisa de cor por trás para se ler */
+html.tv body{
+  background-image:
+    radial-gradient(70rem 44rem at 8% -12%, var(--glow-a), transparent 62%),
+    radial-gradient(60rem 40rem at 92% -8%, var(--glow-b), transparent 60%),
+    radial-gradient(52rem 40rem at 76% 108%, color-mix(in srgb,var(--purple) 22%,transparent), transparent 62%),
+    radial-gradient(46rem 34rem at 26% 104%, color-mix(in srgb,var(--orange) 16%,transparent), transparent 60%);
+  background-attachment:fixed;
+}
+html.phone body{
+  background-image:
+    radial-gradient(60vw 40vh at 6% -6%, var(--glow-a), transparent 62%),
+    radial-gradient(56vw 38vh at 96% 4%, color-mix(in srgb,var(--purple) 18%,transparent), transparent 60%),
+    radial-gradient(60vw 40vh at 50% 100%, var(--glow-b), transparent 62%);
+  background-attachment:fixed;
+}
+
+/* colunas e tiles passam a vidro */
+.col,.tile{background:var(--g-soft);border:1px solid var(--g-brd);box-shadow:var(--g-sh);
+  -webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%)}
+.col{border-top:.35rem solid var(--c)}
+
+/* cartão de pessoa — o vidro principal */
+.p{
+  background:var(--g-bg);
+  -webkit-backdrop-filter:blur(26px) saturate(190%);
+  backdrop-filter:blur(26px) saturate(190%);
+  border:1px solid var(--g-brd);
+  box-shadow:var(--g-sh),var(--g-in);
+  border-radius:1.6rem;
+}
+.p::after{
+  content:"";position:absolute;left:14%;right:14%;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--g-hi),transparent);pointer-events:none;
+}
+.p .av{box-shadow:0 0 0 .22rem var(--c),0 .5rem 1.2rem rgba(0,0,0,.3)}
+.p .meter i{opacity:.32;transition:opacity .3s}
+.p .meter i.act{opacity:1;box-shadow:0 0 .7rem color-mix(in srgb,var(--c) 60%,transparent)}
+
+/* telemóvel: mesmas superfícies em vidro */
+.sumcard,.plist,.mapcard,.inset,.plain,.phtabs{
+  background:var(--g-soft);
+  -webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%);
+  border:1px solid var(--g-brd);box-shadow:var(--g-sh);
+}
+.phtabs{border-left:none;border-right:none;border-bottom:none}
+.ph-nav{background:transparent;-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border-bottom:1px solid var(--g-brd)}
+.prow .av::after{border-color:transparent}
+
+/* ── Registo a partir da TV / desktop ─────────────────── */
+.qr .qscan{
+  flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.9rem;padding:1.3rem;text-align:center;
+}
+.qr .qtext{display:flex;flex-direction:column;align-items:center;gap:.2rem;min-width:0}
+.qr .qaction{
+  flex:1;display:flex;align-items:center;justify-content:center;padding:1.3rem;
+  border-left:1px solid var(--g-brd);
+}
+.qr .reg-btn{
+  width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.7rem;
+  background:var(--blue);color:#fff;font-size:1.4rem;font-weight:600;letter-spacing:-.02em;
+  padding:1.5rem 1rem;border-radius:1.2rem;
+  box-shadow:0 .6rem 1.6rem color-mix(in srgb,var(--blue) 45%,transparent),inset 0 .06rem 0 rgba(255,255,255,.35);
+  transition:transform .18s var(--ease),filter .18s;
+}
+.qr .reg-btn .ico{font-size:2.4rem}
+.qr .reg-btn:hover{filter:brightness(1.1)}
+.qr .reg-btn:active{transform:scale(.96)}
+
+#reg-scrim{
+  position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);padding:3vh 2vw;
+}
+#reg-scrim.on{display:flex;animation:fadein .25s ease}
+#reg-sheet{
+  width:min(560px,94vw);max-height:92vh;overflow-y:auto;border-radius:26px;padding:0 0 22px;
+}
+html.tv #reg-sheet{zoom:clamp(1,.115vh,2.2)}
+#reg-head{
+  position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;padding:18px 20px 14px;
+  background:inherit;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+}
+#reg-head h3{margin:0;font-size:19px;font-weight:700;letter-spacing:-.024em}
+#reg-head .ico{color:var(--blue);font-size:18px}
+#reg-head .x{margin-left:auto;width:32px;height:32px;border-radius:50%;background:var(--fill);color:var(--text-2);display:flex;align-items:center;justify-content:center;font-size:15px}
+#reg-head .x:hover{background:var(--fill-2);color:var(--text)}
+#reg-slot{padding:0 20px}
+#reg-slot h1{font-size:24px;margin:4px 0 2px}
+#reg-slot .sub{margin-bottom:14px}
+
 @media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation:none!important;transition:none!important} }
 </style>
 </head>
 <body>
+
+<img id="mws" src="https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786098165/MWS_Bitmap_3_bmsj63.png" alt="" aria-hidden="true" onerror="this.remove()">
 
 <svg style="display:none" aria-hidden="true">
   <symbol id="i-factory" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20V11l5.2 3.2V11l5.2 3.2V11l5.2 3.2V20z"/><path d="M18.6 11V4.6h2.2V11"/><path d="M2 20h20"/></symbol>
@@ -295,6 +446,7 @@ html.phone body{overflow-x:hidden}
   <symbol id="i-people" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M2.6 20.2a6.4 6.4 0 0 1 12.8 0"/><path d="M16.4 5a3.4 3.4 0 0 1 0 6.4"/><path d="M17.6 14.4a6.4 6.4 0 0 1 3.8 5.8"/></symbol>
   <symbol id="i-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21.4s6.6-6.3 6.6-11.2a6.6 6.6 0 1 0-13.2 0C5.4 15.1 12 21.4 12 21.4z"/><circle cx="12" cy="10" r="2.5"/></symbol>
   <symbol id="i-checkin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3.6h9.4a1.6 1.6 0 0 1 1.6 1.6v13.6a1.6 1.6 0 0 1-1.6 1.6H9"/><path d="M13.4 12H3.6"/><path d="M7.2 8.2 3.4 12l3.8 3.8"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.4 6.4l11.2 11.2M17.6 6.4L6.4 17.6"/></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a8.6 8.6 0 1 0 11.1 11.1z"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 12.6l4.6 4.6L19.2 7.4"/></symbol>
   <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.2"/><path d="M12 7.4v5.4M12 16.2v.3"/></symbol>
@@ -323,10 +475,18 @@ html.phone body{overflow-x:hidden}
     <aside class="rail">
       <div class="tile" style="flex:1"><div id="tvmap"></div></div>
       <div class="tile qr">
-        <div class="code" id="qr"><span class="fb">Defina o endereço em CHECKIN_URL</span></div>
-        <div>
-          <h3>Registe o seu dia</h3>
-          <p>Aponte a câmara do telemóvel ao código e diga onde está a trabalhar hoje.</p>
+        <div class="qscan">
+          <div class="code" id="qr"><span class="fb">Defina o endereço em CHECKIN_URL</span></div>
+          <div class="qtext">
+            <h3>Registe o seu dia</h3>
+            <p>Aponte a câmara ao código</p>
+          </div>
+        </div>
+        <div class="qaction">
+          <button class="reg-btn" onclick="openRegModal()">
+            <svg class="ico"><use href="#i-checkin"/></svg>
+            <span>Onboarding</span>
+          </button>
         </div>
       </div>
       <div class="tile feed">
@@ -370,6 +530,7 @@ html.phone body{overflow-x:hidden}
 
   <!-- REGISTO -->
   <section class="ph pv" id="pv-registo">
+   <div id="regwrap">
     <div id="ph-form">
       <h1>Onde está hoje?</h1>
       <div class="sub" id="ph-date2">—</div>
@@ -409,8 +570,9 @@ html.phone body{overflow-x:hidden}
         <p id="done-sub"></p>
       </div>
       <button class="plain" onclick="backToForm()">Corrigir registo</button>
-      <button class="plain" onclick="showPhoneView('equipa')">Ver a equipa</button>
+      <button class="plain" onclick="MODE==='tv'?closeRegModal():showPhoneView('equipa')">Ver a equipa</button>
     </div>
+   </div>
   </section>
 
   <nav class="phtabs">
@@ -426,11 +588,22 @@ html.phone body{overflow-x:hidden}
   </nav>
 </div>
 
+<div id="reg-scrim" onclick="if(event.target===this)closeRegModal()">
+  <div id="reg-sheet" class="glass" role="dialog" aria-modal="true" aria-label="Registo diário">
+    <div id="reg-head">
+      <svg class="ico"><use href="#i-map"/></svg>
+      <h3>Registo diário</h3>
+      <button class="x" onclick="closeRegModal()" aria-label="Fechar"><svg class="ico"><use href="#i-x"/></svg></button>
+    </div>
+    <div id="reg-slot"></div>
+  </div>
+</div>
+
 <button class="switch" id="switch" onclick="toggleMode()"></button>
 
 <script>
 /* ═══ Configuração ═══ */
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHZjtdZjrzW9n50i1D9aeA45YhgD3cPHmx8_LKG0Z1nmON0KogO4emoXDTVJaRuAZ9/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxnyJhIC-DP0ACA-e0KcLBJ0Nj3LBHxAonxAVwkekkZvD9mCYPFiP2zPmoxd1ZMPSZR/exec";
 /* Endereço público desta página — é o que fica no código QR da TV.
    Deixe vazio para usar automaticamente o endereço atual. */
 const CHECKIN_URL = "";
@@ -504,23 +677,24 @@ function renderTV(){
     const rows = list.length ? list.map(m=>{
       const sub=m.subId?members.find(x=>x.id===m.subId):null;
       const second = sub ? `<b>Substituído por ${esc(shortName(sub.name))}</b>` : esc(m.obs||st.sub);
-      const tot = (m.metrics.fabrica||0)+(m.metrics.home||0)+(m.metrics.viagem||0) || 1;
+      const dias = m.metrics[k]||0;
       return `<div class="p" style="--c:${st.c}">
         <div class="ptop">
           ${avatarHtml(m)}
           <div class="m">
             <div class="nm">${esc(shortName(m.name))}</div>
-            <div class="tm">${isToday(m.lastUpdate)?'Registou às '+hhmm(m.lastUpdate):'Desde '+dmy(m.lastUpdate)}</div>
+            <div class="tm">${dmy(m.lastUpdate)} · ${hhmm(m.lastUpdate)}</div>
           </div>
         </div>
         <div class="sb">${second}</div>
         <div class="pfoot">
-          <div class="meter" title="Dias acumulados">
-            <i style="flex:${m.metrics.fabrica};background:var(--green)"></i>
-            <i style="flex:${m.metrics.home};background:var(--blue)"></i>
-            <i style="flex:${m.metrics.viagem};background:var(--orange)"></i>
+          <div class="meter" title="Fábrica ${m.metrics.fabrica||0} · Home ${m.metrics.home||0} · Viagem ${m.metrics.viagem||0} · Férias ${m.metrics.ferias||0}">
+            <i class="${k==='fabrica'?'act':''}" style="flex:${(m.metrics.fabrica||0)+.2};background:var(--green)"></i>
+            <i class="${k==='home'?'act':''}" style="flex:${(m.metrics.home||0)+.2};background:var(--blue)"></i>
+            <i class="${k==='viagem'?'act':''}" style="flex:${(m.metrics.viagem||0)+.2};background:var(--orange)"></i>
+            <i class="${k==='ferias'?'act':''}" style="flex:${(m.metrics.ferias||0)+.2};background:var(--purple)"></i>
           </div>
-          <span class="days">${tot} dias</span>
+          <span class="days">${dias} ${dias===1?'dia':'dias'}</span>
         </div>
       </div>`;
     }).join('') : `<div class="col-empty">Ninguém</div>`;
@@ -568,12 +742,27 @@ function drawMap(id){
   if(b.length) m0.fitBounds(b,{padding:[35,35],maxZoom:9});
 }
 
+function urlDeRegisto(){
+  let base = CHECKIN_URL.trim();
+  if(!base){
+    // sem endereço definido, tenta o da própria página
+    if(location.protocol!=='http:' && location.protocol!=='https:') return null;  // file:// ou sandbox: inútil num QR
+    base = location.origin + location.pathname;
+  }
+  return base + (base.includes('?') ? '&' : '?') + 'modo=telemovel&vista=registo';
+}
+
 function makeQR(){
   const box=document.getElementById('qr');
-  const url = CHECKIN_URL || (location.origin+location.pathname+'?modo=telemovel');
+  const url=urlDeRegisto();
+
+  if(!url){
+    box.innerHTML='<span class="fb">Defina CHECKIN_URL<br>com o endereço público</span>';
+    return;
+  }
   if(typeof QRCode==='undefined'){ box.innerHTML=`<span class="fb">${esc(url)}</span>`; return; }
   box.innerHTML='';
-  try{ new QRCode(box,{text:url,width:220,height:220,correctLevel:QRCode.CorrectLevel.M}); }
+  try{ new QRCode(box,{text:url,width:260,height:260,correctLevel:QRCode.CorrectLevel.M}); }
   catch(e){ box.innerHTML=`<span class="fb">${esc(url)}</span>`; }
 }
 
@@ -604,7 +793,7 @@ function renderPhoneBoard(){
       return `<div class="prow">
         <div class="av" style="--c:${st.c}"><span class="ini">${initials(m.name)}</span>${m.photo?`<img src="${esc(m.photo)}" alt="" loading="lazy" onerror="this.remove()">`:''}</div>
         <div class="m"><div class="nm">${esc(shortName(m.name))}</div><div class="sb">${second}</div></div>
-        <div class="tm">${isToday(m.lastUpdate)?hhmm(m.lastUpdate):dmy(m.lastUpdate)}</div>
+        <div class="tm">${dmy(m.lastUpdate)} · ${hhmm(m.lastUpdate)}</div>
       </div>`;
     }).join(''):`<div class="pempty">Ninguém neste estado hoje.</div>`;
     return `<section class="pgroup">
@@ -680,7 +869,7 @@ function preparePhone(){
 function backToForm(){
   document.getElementById('ph-done').classList.add('hide');
   document.getElementById('ph-form').classList.remove('hide');
-  showPhoneView('registo');
+  if(MODE!=='tv') showPhoneView('registo');
   document.getElementById('form').reset();
   document.getElementById('f-where').value='';
   document.getElementById('sub-block').hidden=true;
@@ -703,7 +892,7 @@ function submitCheckin(e){
   if(!m) return showAlert('Não encontrámos esse nome na lista.');
 
   m.status=where; m.subId=subId;
-  if(where!=='ferias'&&m.metrics[where]!==undefined) m.metrics[where]+=1;
+  m.metrics[where]=(m.metrics[where]||0)+1;
   m.lat=gps.lat+(Math.random()-.5)*0.002;
   m.lng=gps.lng+(Math.random()-.5)*0.002;
   const n=new Date();
@@ -713,19 +902,20 @@ function submitCheckin(e){
   const sub=subId?members.find(x=>x.id===subId):null;
   logs.unshift({memberName:m.name,status:where,subName:sub?sub.name:'-',time:m.lastUpdate,lat:m.lat.toFixed(4),lng:m.lng.toFixed(4),obs:m.obs});
 
-  if(GOOGLE_SCRIPT_URL && !GOOGLE_SCRIPT_URL.includes('SUA_WEB_APP')){
-    fetch(GOOGLE_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({time:m.lastUpdate,memberName:m.name,statusLabel:STATUS[where].label,subName:sub?sub.name:'-',lat:m.lat.toFixed(4),lng:m.lng.toFixed(4),obs:m.obs})}).catch(()=>{});
-  }
+  enviarParaSheet({time:m.lastUpdate,memberName:m.name,statusLabel:STATUS[where].label,
+                   subName:sub?sub.name:'-',lat:m.lat.toFixed(4),lng:m.lng.toFixed(4),obs:m.obs});
   saveState();
 
   document.getElementById('done-title').textContent=`${STATUS[where].label}, ${shortName(m.name).split(' ')[0]}`;
-  document.getElementById('done-sub').textContent=`Registado às ${hhmm(m.lastUpdate)}. Já aparece no ecrã da fábrica.`;
+  const dsub=document.getElementById('done-sub');
+  dsub.dataset.base=`Registado às ${hhmm(m.lastUpdate)}.`;
+  dsub.textContent=dsub.dataset.base;
   document.getElementById('ph-form').classList.add('hide');
   document.getElementById('ph-done').classList.remove('hide');
   renderPhoneBoard();
   if(maps['ph-map']) drawMap('ph-map');
-  window.scrollTo({top:0,behavior:'smooth'});
+  if(MODE==='tv'){ renderTV(); drawMap('tvmap'); setTimeout(closeRegModal,4200); }
+  else window.scrollTo({top:0,behavior:'smooth'});
 }
 
 /* ═══ Modo ═══ */
@@ -747,8 +937,32 @@ function applyMode(mode){
     setTimeout(()=>drawMap('tvmap'),150);
   } else {
     buildPicker(); preparePhone();
+    const vista = new URLSearchParams(location.search).get('vista') || location.hash.replace('#','');
+    showPhoneView(vista==='registo' ? 'registo' : 'equipa');
   }
 }
+function openRegModal(){
+  const wrap=document.getElementById('regwrap');
+  document.getElementById('reg-slot').appendChild(wrap);
+  buildPicker(); preparePhone(); backToFormSilent();
+  document.getElementById('reg-scrim').classList.add('on');
+}
+function closeRegModal(){
+  document.getElementById('reg-scrim').classList.remove('on');
+  const wrap=document.getElementById('regwrap');
+  document.getElementById('pv-registo').appendChild(wrap);
+  if(MODE==='tv'){ renderTV(); drawMap('tvmap'); }
+}
+function backToFormSilent(){
+  document.getElementById('ph-done').classList.add('hide');
+  document.getElementById('ph-form').classList.remove('hide');
+  document.getElementById('form').reset();
+  document.getElementById('f-where').value='';
+  document.getElementById('sub-block').hidden=true;
+  ORDER.forEach(x=>document.getElementById('opt-'+x).setAttribute('aria-pressed','false'));
+  hideAlert();
+}
+
 function toggleMode(){ forcedMode = MODE==='tv'?'phone':'tv'; applyMode(forcedMode); }
 
 let forcedMode = new URLSearchParams(location.search).get('modo') ? detectMode() : null;
@@ -762,7 +976,73 @@ addEventListener('resize',()=>{
     if(want !== MODE) applyMode(want);     // ex.: tablet a rodar entre retrato e paisagem
   }, 250);
 });
+addEventListener('keydown',e=>{ if(e.key==='Escape') closeRegModal(); });
 addEventListener('orientationchange',()=>setTimeout(()=>dispatchEvent(new Event('resize')),300));
+
+/* ═══ Google Sheets ═══ */
+const LABEL2KEY = Object.fromEntries(ORDER.map(k=>[STATUS[k].label,k]));
+
+function setSyncNote(txt,ok){
+  const el=document.getElementById('done-sub');
+  if(el) el.innerHTML = el.dataset.base + (txt?` <span style="color:${ok?'var(--green)':'var(--orange)'}">· ${txt}</span>`:'');
+}
+
+async function enviarParaSheet(payload){
+  if(!GOOGLE_SCRIPT_URL) return;
+  setSyncNote('a guardar…',true);
+  try{
+    const r = await fetch(GOOGLE_SCRIPT_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},   // evita o preflight CORS
+      body:JSON.stringify(payload)
+    });
+    const d = await r.json();
+    if(d && d.status==='success'){ setSyncNote('guardado na folha',true); sincronizar(); }
+    else setSyncNote('a folha devolveu erro',false);
+  }catch(err){
+    // fica guardado localmente; a folha apanha no próximo envio
+    setSyncNote('sem ligação — guardado só neste aparelho',false);
+  }
+}
+
+/** Lê a folha e reconstrói estados, contagens e histórico. */
+async function sincronizar(){
+  if(!GOOGLE_SCRIPT_URL) return false;
+  try{
+    const r = await fetch(GOOGLE_SCRIPT_URL+'?action=dados',{cache:'no-store'});
+    const d = await r.json();
+    if(!d || !Array.isArray(d.rows) || !d.rows.length) return false;
+
+    members.forEach(m=>{ m.metrics={fabrica:0,home:0,viagem:0,ferias:0}; });
+    const norm = t=>String(t||'').trim().toLowerCase();
+    const acha = nome=>members.find(m=>norm(m.name)===norm(nome))
+                    || members.find(m=>norm(m.name).startsWith(norm(nome).split(' ')[0]));
+
+    d.rows.forEach(row=>{                      // do mais antigo para o mais recente
+      const m = acha(row.memberName); if(!m) return;
+      const k = LABEL2KEY[row.statusLabel]; if(!k) return;
+      m.metrics[k] = (m.metrics[k]||0)+1;
+      m.status = k;
+      m.lastUpdate = row.time;
+      m.obs = row.obs || STATUS[k].label;
+      const sub = (row.subName && row.subName!=='-') ? acha(row.subName) : null;
+      m.subId = sub ? sub.id : null;
+      const la=parseFloat(row.lat), ln=parseFloat(row.lng);
+      if(!isNaN(la)&&!isNaN(ln)){ m.lat=la; m.lng=ln; }
+    });
+
+    logs = d.rows.slice().reverse()
+      .filter(row=>LABEL2KEY[row.statusLabel])
+      .map(row=>({
+        memberName:row.memberName, status:LABEL2KEY[row.statusLabel],
+        subName:row.subName||'-', time:row.time, lat:row.lat, lng:row.lng, obs:row.obs
+      }));
+
+    saveState();
+    if(MODE==='tv'){ renderTV(); drawMap('tvmap'); } else { renderPhoneBoard(); if(maps['ph-map']) drawMap('ph-map'); }
+    return true;
+  }catch(err){ return false; }
+}
 
 /* ═══ Tema ═══ */
 function setTheme(t){
@@ -786,14 +1066,12 @@ loadState();
 const startMode = detectMode();
 initTheme(startMode);
 applyMode(startMode);
+sincronizar();
 
 setInterval(()=>{
   if(MODE!=='tv') return;
   tvClock();
-  loadState();          // apanha registos feitos noutro dispositivo/aba
-  renderTV();
-  drawMap('tvmap');
-  if(MODE==='phone') renderPhoneBoard();
+  sincronizar().then(ok=>{ if(!ok){ loadState(); renderTV(); drawMap('tvmap'); } });
 }, REFRESH_MS);
 setInterval(()=>{ if(MODE==='tv') tvClock(); }, 15000);
 
