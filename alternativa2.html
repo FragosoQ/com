@@ -842,37 +842,59 @@ const STATUS = {
 };
 const ORDER = ['fabrica','home','viagem','ferias'];
 
-const DEFAULT_MEMBERS = [
-  {id:1,name:"David José Nunes Borges",status:"fabrica",subId:null,metrics:{fabrica:18,home:4,viagem:2},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012316/David_Borges_Comercial_iaun1r.jpg",lat:40.5751,lng:-8.4442,lastUpdate:"2026-08-06 09:15",obs:"Em trabalho na fábrica"},
-  {id:2,name:"Diogo Paulo Gonçalves Marques Brito de Sousa",status:"fabrica",subId:null,metrics:{fabrica:21,home:2,viagem:5},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012316/Diogo_Sousa_Comercial_hukxx3.jpg",lat:40.5753,lng:-8.4440,lastUpdate:"2026-08-06 08:30",obs:"Acompanhamento da linha de produção"},
-  {id:3,name:"João Maria Bernardo da Cunha Pinto",status:"home",subId:null,metrics:{fabrica:10,home:14,viagem:3},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012316/Jo%C3%A3o_Pinto_Comercial_jfqmzk.jpg",lat:41.1579,lng:-8.6291,lastUpdate:"2026-08-06 09:00",obs:"Trabalho remoto no Porto"},
-  {id:4,name:"Manuel Diniz Cruz do Marco",status:"viagem",subId:null,metrics:{fabrica:7,home:3,viagem:18},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012316/Manuel_Diniz_Comercial_lhb2pc.jpg",lat:38.7223,lng:-9.1393,lastUpdate:"2026-08-06 10:20",obs:"Reuniões comerciais em Lisboa"},
-  {id:5,name:"Miguel André Ferreira Pacheco Quental",status:"fabrica",subId:null,metrics:{fabrica:25,home:1,viagem:4},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012315/Andr%C3%A9_Quental_Comercial_okupkb.jpg",lat:40.5749,lng:-8.4445,lastUpdate:"2026-08-06 08:45",obs:"Gestão de propostas comerciais"},
-  {id:6,name:"Renato Pires Gomes",status:"ferias",subId:1,metrics:{fabrica:12,home:5,viagem:6},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012316/Renato_Gomes_Comercial_fs38ew.jpg",lat:40.5750,lng:-8.4441,lastUpdate:"2026-08-01 18:00",obs:"Férias de verão"},
-  {id:7,name:"David Mendez",status:"viagem",subId:null,metrics:{fabrica:5,home:2,viagem:20},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012315/David_Mendez_Comercial_ayjxcw.jpg",lat:40.4168,lng:-3.7038,lastUpdate:"2026-08-06 07:50",obs:"Prospeção de mercado em Madrid"},
-  {id:8,name:"David Sturla",status:"home",subId:null,metrics:{fabrica:8,home:15,viagem:5},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012316/Davide_Sturla_Comercial_he8i21.jpg",lat:45.4642,lng:9.1900,lastUpdate:"2026-08-06 08:15",obs:"Home office em Milão"},
-  {id:9,name:"Juan Marco",status:"fabrica",subId:null,metrics:{fabrica:16,home:3,viagem:7},photo:"",lat:40.5752,lng:-8.4443,lastUpdate:"2026-08-06 08:50",obs:"Fábrica Somengil"},
-  {id:10,name:"Francisco Ventura",status:"fabrica",subId:null,metrics:{fabrica:19,home:4,viagem:6},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012805/Francisco_Ventura_Comercial_ykluyu.jpg",lat:40.5754,lng:-8.4444,lastUpdate:"2026-08-06 09:10",obs:"Análise de projetos"},
-  {id:11,name:"Simão Ventura",status:"viagem",subId:null,metrics:{fabrica:9,home:2,viagem:15},photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012805/Sim%C3%A3o_Ventura_Comercial_iso5zg.jpg",lat:38.7071,lng:-9.1355,lastUpdate:"2026-08-06 11:00",obs:"Demonstração técnica de equipamento"}
+/* ── Equipa: só nome e foto. Estado, dias e posição vêm todos da folha. ── */
+const EQUIPA = [
+  {id:1,  name:"David José Nunes Borges",                     photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012316/David_Borges_Comercial_iaun1r.jpg"},
+  {id:2,  name:"Diogo Paulo Gonçalves Marques Brito de Sousa",photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012316/Diogo_Sousa_Comercial_hukxx3.jpg"},
+  {id:3,  name:"João Maria Bernardo da Cunha Pinto",          photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012316/Jo%C3%A3o_Pinto_Comercial_jfqmzk.jpg"},
+  {id:4,  name:"Manuel Diniz Cruz do Marco",                  photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012316/Manuel_Diniz_Comercial_lhb2pc.jpg"},
+  {id:5,  name:"Miguel André Ferreira Pacheco Quental",       photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012315/Andr%C3%A9_Quental_Comercial_okupkb.jpg"},
+  {id:6,  name:"Renato Pires Gomes",                          photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012316/Renato_Gomes_Comercial_fs38ew.jpg"},
+  {id:7,  name:"David Mendez",                                photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012315/David_Mendez_Comercial_ayjxcw.jpg"},
+  {id:8,  name:"David Sturla",                                photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012316/Davide_Sturla_Comercial_he8i21.jpg"},
+  {id:9,  name:"Juan Marco",                                  photo:""},
+  {id:10, name:"Francisco Ventura",                           photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012805/Francisco_Ventura_Comercial_ykluyu.jpg"},
+  {id:11, name:"Simão Ventura",                               photo:"https://res.cloudinary.com/dlkkjtgvy/image/upload/v1786012805/Sim%C3%A3o_Ventura_Comercial_iso5zg.jpg"}
 ];
 
 let members=[], logs=[], planos=[], maps={}, markers={}, gps={lat:40.5751,lng:-8.4442}, MODE='tv';
 
 /* ═══ Estado ═══ */
-const store={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
-function loadState(){
-  try{ members=JSON.parse(store.get('somengil_presenca_members_v6'))||JSON.parse(JSON.stringify(DEFAULT_MEMBERS)); }
-  catch(e){ members=JSON.parse(JSON.stringify(DEFAULT_MEMBERS)); }
-  try{ logs=JSON.parse(store.get('somengil_presenca_history_v6'))||null; }catch(e){ logs=null; }
-  if(!logs) logs=[
-    {memberName:"Simão Ventura",status:"viagem",subName:"-",time:"2026-08-06 11:00",lat:"38.7071",lng:"-9.1355",obs:"Demonstração técnica"},
-    {memberName:"Manuel Diniz Cruz do Marco",status:"viagem",subName:"-",time:"2026-08-06 10:20",lat:"38.7223",lng:"-9.1393",obs:"Reuniões comerciais"},
-    {memberName:"Renato Pires Gomes",status:"ferias",subName:"David José Nunes Borges",time:"2026-08-01 18:00",lat:"40.5750",lng:"-8.4441",obs:"Férias de verão"}
-  ];
+const store={
+  get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},
+  set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}
+};
+
+/** Equipa em branco: sem estado, ninguém aparece nas colunas até haver linhas na folha. */
+function equipaVazia(){
+  return EQUIPA.map(p=>({
+    id:p.id, name:p.name, photo:p.photo,
+    status:null, subId:null,
+    metrics:{fabrica:0,home:0,viagem:0,ferias:0},
+    lat:null, lng:null, lastUpdate:'', obs:'', plano:null
+  }));
 }
+
+function loadState(){
+  members = equipaVazia();
+  try{
+    const guardado = JSON.parse(store.get('somengil_presenca_members_v7'));
+    if(Array.isArray(guardado)){
+      // a cache local só serve para não ficar o ecrã vazio enquanto a folha não responde
+      members.forEach(m=>{
+        const g = guardado.find(x=>x.id===m.id);
+        if(g){ m.status=g.status||null; m.subId=g.subId??null; m.metrics=g.metrics||m.metrics;
+               m.lat=g.lat??null; m.lng=g.lng??null; m.lastUpdate=g.lastUpdate||''; m.obs=g.obs||''; }
+      });
+    }
+  }catch(e){}
+  try{ logs = JSON.parse(store.get('somengil_presenca_history_v7')) || []; }catch(e){ logs = []; }
+  if(!Array.isArray(logs)) logs = [];
+}
+
 function saveState(){
-  store.set('somengil_presenca_members_v6',JSON.stringify(members));
-  store.set('somengil_presenca_history_v6',JSON.stringify(logs));
+  store.set('somengil_presenca_members_v7',JSON.stringify(members));
+  store.set('somengil_presenca_history_v7',JSON.stringify(logs));
 }
 
 /* ═══ Utilitários ═══ */
@@ -908,7 +930,7 @@ function renderTV(){
           ${avatarHtml(m)}
           <div class="m">
             <div class="nm">${esc(shortName(m.name))}</div>
-            <div class="tm">${dmy(m.lastUpdate)} · ${hhmm(m.lastUpdate)}</div>
+            <div class="tm">${marcaTempo(m)}</div>
           </div>
         </div>
         <div class="sb">${second}</div>
@@ -922,7 +944,7 @@ function renderTV(){
           <span class="days">${dias} ${dias===1?'dia':'dias'}</span>
         </div>
       </div>`;
-    }).join('') : `<div class="col-empty">Ninguém</div>`;
+    }).join('') : `<div class="col-empty">Sem registos</div>`;
 
     document.getElementById('col-'+k).style.setProperty('--c',st.c);
     document.getElementById('col-'+k).innerHTML = `
@@ -944,7 +966,7 @@ function renderTV(){
 
 function pinFor(m){
   return L.divIcon({className:'pin',
-    html:`<div class="disc" style="--c:${STATUS[m.status].c}"><span class="ini">${initials(m.name)}</span>${m.photo?`<img src="${esc(m.photo)}" alt="" onerror="this.remove()">`:''}</div>`,
+    html:`<div class="disc" style="--c:${(STATUS[m.status]||STATUS.fabrica).c}"><span class="ini">${initials(m.name)}</span>${m.photo?`<img src="${esc(m.photo)}" alt="" onerror="this.remove()">`:''}</div>`,
     iconSize:[40,40], iconAnchor:[20,20]});
 }
 function drawMap(id){
@@ -962,7 +984,7 @@ function drawMap(id){
   const m0=maps[id];
   (markers[id]||[]).forEach(x=>m0.removeLayer(x)); markers[id]=[];
   const b=[];
-  members.forEach(m=>{ if(!m.lat||!m.lng) return;
+  members.forEach(m=>{ if(!m.lat||!m.lng||!m.status) return;
     markers[id].push(L.marker([m.lat,m.lng],{icon:pinFor(m),interactive:!tv}).addTo(m0)); b.push([m.lat,m.lng]); });
   if(b.length) m0.fitBounds(b,{padding:[35,35],maxZoom:9});
 }
@@ -1018,9 +1040,9 @@ function renderPhoneBoard(){
       return `<div class="prow">
         <div class="av" style="--c:${st.c}"><span class="ini">${initials(m.name)}</span>${m.photo?`<img src="${esc(m.photo)}" alt="" loading="lazy" onerror="this.remove()">`:''}</div>
         <div class="m"><div class="nm">${esc(shortName(m.name))}</div><div class="sb">${second}</div></div>
-        <div class="tm">${dmy(m.lastUpdate)} · ${hhmm(m.lastUpdate)}</div>
+        <div class="tm">${marcaTempo(m)}</div>
       </div>`;
-    }).join(''):`<div class="pempty">Ninguém neste estado hoje.</div>`;
+    }).join(''):`<div class="pempty">Sem registos.</div>`;
     return `<section class="pgroup">
       <div class="pgroup-head" style="--c:${st.c}">
         <div class="badge"><svg class="ico" style="font-size:14px"><use href="#${st.icon}"/></svg></div>
@@ -1284,32 +1306,39 @@ function aplicarDados(onb, plan){
 
   // ── planning: dias de viagem do mês corrente + quem está fora hoje ──
   const hoje = isoHoje(), mes = hoje.slice(0,7);
-  const viagemMes = new Map(), foraHoje = new Map();
+  const viagemMes = new Map();     // id -> {dias:Set, linhas:[]}
   plan.forEach(row=>{
     const m = acha(row.memberName); if(!m) return;
-    const dia = diaISO(row.dia); if(!dia) return;
-    if(dia.startsWith(mes)){
-      if(!viagemMes.has(m.id)) viagemMes.set(m.id,new Set());
-      viagemMes.get(m.id).add(dia);
-    }
-    if(dia===hoje) foraHoje.set(m.id,row);
+    const dia = diaISO(row.dia); if(!dia || !dia.startsWith(mes)) return;
+    if(!viagemMes.has(m.id)) viagemMes.set(m.id,{dias:new Set(),linhas:[]});
+    const v = viagemMes.get(m.id);
+    v.dias.add(dia);
+    v.linhas.push({...row, dia});
   });
 
   members.forEach(m=>{
     const b = balde.get(m.id);
+    const v = viagemMes.get(m.id);
     m.metrics = {
       fabrica: b?b.fabrica.size:0,
       home:    b?b.home.size:0,
       ferias:  b?b.ferias.size:0,
-      viagem:  (viagemMes.get(m.id)||new Set()).size
+      viagem:  v?v.dias.size:0
     };
-    const t = foraHoje.get(m.id);
-    if(t){                                            // viagem planeada manda no dia
-      m.status='viagem';
-      m.obs = [t.cliente,t.pais].filter(Boolean).join(' · ') || t.obs || 'Em viagem';
-      m.lastUpdate = t.time || m.lastUpdate;
-      const sub = (t.subName && t.subName!=='-') ? acha(t.subName) : null;
-      if(sub) m.subId = sub.id;
+
+    m.plano = null;
+    if(v){                                   // tem dias planeados este mês → coluna Em viagem
+      const dias = [...v.dias].sort();
+      const proximo = dias.find(d=>d>=hoje) || dias[dias.length-1];
+      const linha = v.linhas.find(l=>l.dia===proximo) || v.linhas[0];
+      m.plano = {
+        ini: dias[0], fim: dias[dias.length-1], total: dias.length,
+        hoje: v.dias.has(hoje), proximo,
+        cliente: linha.cliente || '', pais: linha.pais || ''
+      };
+      m.status = 'viagem';
+      m.obs = [linha.cliente, linha.pais].filter(Boolean).join(' · ') || linha.obs || 'Em viagem';
+      if(linha.time) m.lastUpdate = linha.time;
     }
   });
 
@@ -1450,6 +1479,16 @@ const coordPais = p=>{
   const chave=Object.keys(PAISES).find(k=>semAcento(k)===alvo);
   return chave ? PAISES[chave] : null;
 };
+
+/** O que mostrar no canto do cartão: datas da viagem, ou data e hora do registo. */
+function marcaTempo(m){
+  if(m.plano){
+    const p=m.plano;
+    if(p.hoje) return p.total>1 ? `Hoje · até ${ddmm(p.fim)}` : 'Hoje';
+    return p.ini===p.fim ? ddmm(p.ini) : `${ddmm(p.ini)} – ${ddmm(p.fim)}`;
+  }
+  return m.lastUpdate ? `${dmy(m.lastUpdate)} · ${hhmm(m.lastUpdate)}` : '—';
+}
 
 function acharMembro(nome){
   const n=semAcento(nome); if(!n) return null;
