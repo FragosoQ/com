@@ -139,8 +139,15 @@ html.tv body{
 .tile{background:var(--surface);border-radius:1.6rem;overflow:hidden;display:flex;flex-direction:column;min-height:0;box-shadow:var(--shadow)}
 #tvmap{flex:1;min-height:0;background:var(--map-bg)}
 .leaflet-container{background:var(--map-bg);font-family:inherit}
-.leaflet-tile{width:258px!important;height:258px!important;margin:-1px!important;max-width:none!important}
-/* tiles: usamos mapas já escuros/claros em vez de filtros CSS (Tizen não os aplica) */
+/* tiles: usamos mapas já escuros/claros em vez de filtros CSS (Tizen não os aplica).
+   NÃO redimensionar os tiles — o WebKit antigo das TVs suaviza as margens da
+   imagem reescalada e desenha uma linha clara em cada junção. Mantemos o
+   tamanho original e evitamos posições fraccionárias (ver TV_BROWSER no JS). */
+.leaflet-tile{max-width:none!important;image-rendering:auto}
+.leaflet-tile-container{will-change:auto}
+/* fora da TV (mapas com arrasto) o velho truque de sobreposição continua a
+   ajudar, porque aí o reescalonamento é feito sem artefactos nas margens */
+html:not(.tv) .leaflet-tile{width:258px!important;height:258px!important;margin:-1px!important}
 .leaflet-control-attribution{background:transparent!important;color:var(--text-3)!important;font-size:.85rem!important}
 .leaflet-control-attribution a{color:var(--text-2)!important}
 .pin{background:none!important;border:none!important}
@@ -1077,10 +1084,12 @@ function renderTV(){
     </div>`).join('') || `<div class="f" style="color:rgba(235,235,245,.3)">Sem registos hoje</div>`;
 }
 
-function pinFor(m){
+/** `desloc` = deslocação horizontal em pixéis de ecrã (independente do zoom). */
+function pinFor(m,desloc){
+  const dx = desloc || 0;
   return L.divIcon({className:'pin',
     html:`<div class="disc" style="--c:${(STATUS[m.status]||STATUS.fabrica).c}"><span class="ini">${initials(m.name)}</span>${m.photo?`<img src="${esc(m.photo)}" alt="" onerror="this.remove()">`:''}</div>`,
-    iconSize:[40,40], iconAnchor:[20,20]});
+    iconSize:[40,40], iconAnchor:[20-dx,20]});
 }
 const FABRICA = [40.5751,-8.4442];   // Somengil, Aveiro
 const MAP_PIN_GAP = 48;
@@ -1097,9 +1106,17 @@ const TILES = {
 };
 const temaAtual = ()=> document.documentElement.getAttribute('data-theme')==='light' ? 'light' : 'dark';
 
+/* Browsers de TV (Tizen, webOS…) desenham os transforms 3D em posições
+   fraccionárias: entre tiles fica meio pixel a descoberto e o mapa aparece
+   às quadrículas. Sem 3D, o Leaflet posiciona os tiles com left/top em
+   pixéis inteiros e as junções desaparecem — o mapa fica uniforme.        */
+const TV_BROWSER = /Tizen|SMART-TV|SmartTV|Web0S|webOS|NetCast|VIDAA|HbbTV|AppleTV|CrKey/i.test(navigator.userAgent||'');
+if(typeof L!=='undefined' && TV_BROWSER){ L.Browser.any3d=false; L.Browser.retina=false; }
+
 function criarTiles(mapa,id){
   const layer = L.tileLayer(TILES[temaAtual()],{
     maxZoom:19, subdomains:'abcd', crossOrigin:true,
+    updateWhenIdle:true, keepBuffer:3,
     attribution:'&copy; OpenStreetMap &copy; CARTO'
   }).addTo(mapa);
 
@@ -1151,9 +1168,11 @@ function drawMap(id){
   if(!box) return;
   if(typeof L==='undefined'){ box.innerHTML='<div style="height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:1.3rem;padding:16px;text-align:center">Mapa indisponível</div>'; return; }
   const tv = (id==='tvmap');
+  if(tv) L.Browser.any3d = false;          // mapa da TV: posições inteiras, sem junções à vista
   if(!maps[id]){
     maps[id]=L.map(id, tv
-      ? {zoomControl:false,attributionControl:true,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,keyboard:false}
+      ? {zoomControl:false,attributionControl:true,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,keyboard:false,
+         fadeAnimation:false,zoomAnimation:false,markerZoomAnimation:false}
       : {zoomControl:true,scrollWheelZoom:false}).setView([40.57,-8.44],5);
     criarTiles(maps[id], id);
     markers[id]=[];
@@ -1162,31 +1181,35 @@ function drawMap(id){
   (markers[id]||[]).forEach(x=>m0.removeLayer(x)); markers[id]=[];
   const b=[];
   const mapMembers = tv ? members.filter(m=>m.status==='viagem') : members;
-  const paises = new Map();
-  mapMembers.forEach(m=>{
-    if(!tv || m.status!=='viagem') return;
-    const pais = chavePais(m);
-    if(!paises.has(pais)) paises.set(pais,[]);
-    paises.get(pais).push(m);
-  });
+  /* Quem está no mesmo país partilha a mesma coordenada: separamos os pins
+     em ecrã (48px entre centros). A deslocação vive no ícone e não na
+     coordenada, por isso mantém-se exacta seja qual for o zoom escolhido
+     pelo fitBounds a seguir.                                              */
+  const pontos = [];
   mapMembers.forEach(m=>{
     const pos = posicaoDe(m); if(!pos) return;
-    if(tv && m.status==='viagem'){
-      const pais = chavePais(m);
-      const grupo = paises.get(pais);
-      const indice = grupo.indexOf(m);
-      if(grupo.length>1){
-        const ponto = m0.latLngToLayerPoint(pos);
-        ponto.x += (indice-(grupo.length-1)/2)*MAP_PIN_GAP;
-        const ajustado = m0.layerPointToLatLng(ponto);
-        pos[0] = ajustado.lat;
-        pos[1] = ajustado.lng;
-      }
-    }
-    markers[id].push(L.marker(pos,{icon:pinFor(m),interactive:!tv}).addTo(m0));
-    b.push(pos);
+    // só agrupa quem está mesmo empilhado na coordenada do país
+    const pais = tv ? chavePais(m) : '';
+    pontos.push({m:m, pos:pos, pais:(pais && coordPais(pais)) ? pais : null});
   });
-  if(b.length) m0.fitBounds(b,{padding:[35,35],maxZoom:9});
+  const paises = new Map();
+  pontos.forEach(p=>{
+    if(!p.pais) return;
+    if(!paises.has(p.pais)) paises.set(p.pais,[]);
+    paises.get(p.pais).push(p);
+  });
+  let folga = 0;
+  pontos.forEach(p=>{
+    const grupo = p.pais ? paises.get(p.pais) : null;
+    const desloc = (grupo && grupo.length>1)
+      ? (grupo.indexOf(p)-(grupo.length-1)/2)*MAP_PIN_GAP
+      : 0;
+    folga = Math.max(folga, Math.abs(desloc));
+    markers[id].push(L.marker(p.pos,{icon:pinFor(p.m,desloc),interactive:!tv}).addTo(m0));
+    b.push(p.pos);
+  });
+  folga = Math.min(folga, (box.clientWidth||600)*0.25);   // a margem nunca engole o mapa
+  if(b.length) m0.fitBounds(b,{padding:[35+folga,35],maxZoom:9});
 }
 
 function urlDeRegisto(){
