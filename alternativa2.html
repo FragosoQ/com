@@ -635,7 +635,7 @@ input[type=text]::placeholder{color:var(--text-3)}
           </button>
           <button class="reg-btn plan" onclick="openPlanModal()">
             <svg class="ico"><use href="#i-cal"/></svg>
-            <span>Planned</span>
+            <span>Travel</span>
           </button>
         </div>
       </div>
@@ -1619,7 +1619,7 @@ function renderTrips(){
   document.getElementById('tlist').innerHTML = blocos.length ? [
     doMes.length ? `<div class="tsub">Ainda em ${nomeMes}</div>` + doMes.map(cartao).join('') : '',
     seguintes.length ? `<div class="tsub">Meses seguintes</div>` + seguintes.slice(0,12).map(cartao).join('') : ''
-  ].join('') : `<div class="tempty">Sem viagens planeadas.<br>Use o botão Planned para adicionar.</div>`;
+  ].join('') : `<div class="tempty">Sem viagens planeadas.<br>Use o botão Travel para adicionar.</div>`;
 }
 /** Pins das viagens planeadas do mês que está a ser visto. */
 function drawTripMap(){

@@ -105,7 +105,9 @@ html.tv body{
 .p .av .ini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:600;color:var(--text-2)}
 .p .m{flex:1;min-width:0}
 .p .nm{font-size:2rem;font-weight:600;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15}
+.p .flag{display:inline-block;margin-right:.45rem;font-size:1.8rem;line-height:1;vertical-align:.08em}
 .p .tm{font-size:1.3rem;color:var(--text-3);font-variant-numeric:tabular-nums;margin-top:.3rem}
+.p .tz{font-size:1.2rem;color:var(--text-2);font-variant-numeric:tabular-nums;margin-top:.2rem}
 .p .sb{font-size:1.4rem;line-height:1.3;color:var(--text-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .p .sb b{color:var(--purple);font-weight:500}
 .p .pfoot{margin-top:auto;display:flex;align-items:center;gap:1rem}
@@ -675,7 +677,7 @@ input[type=text]::placeholder{color:var(--text-3)}
           </button>
           <button class="reg-btn plan" onclick="openPlanModal('viagem')">
             <svg class="ico"><use href="#i-cal"/></svg>
-            <span>Planned</span>
+            <span>Travel</span>
           </button>
           <button class="reg-btn site" onclick="openPlanModal('fabrica')">
             <svg class="ico"><use href="#i-factory"/></svg>
@@ -1021,9 +1023,10 @@ function renderTV(){
           <div class="m">
             <div class="nm">${esc(shortName(card.name))}</div>
             <div class="tm">${marcaTempo(card)}</div>
+            ${k==='viagem' && card.plano?.pais ? `<div class="tz">${horaViagem(card.plano.pais)}</div>` : ''}
           </div>
         </div>
-        <div class="sb">${second}</div>
+        ${k==='fabrica' ? '' : `<div class="sb">${(k==='viagem' || k==='visitas') && card.plano?.pais ? `<span class="flag" title="${esc(card.plano.pais)}">${bandeiraPais(card.plano.pais)}</span>` : ''}${second}</div>`}
         <div class="pfoot">
           <div class="meter" title="Fábrica ${m.metrics.fabrica||0} · Home ${m.metrics.home||0} · Viagem ${m.metrics.viagem||0} · Férias ${m.metrics.ferias||0}">
             <i class="${k==='fabrica'?'act':''}" style="flex:${(m.metrics.fabrica||0)+.2};background:var(--green)"></i>
@@ -1102,6 +1105,10 @@ function afasta(p,id){
   return [ p[0] + Math.cos(a)*0.06, p[1] + Math.sin(a)*0.09 ];
 }
 
+function chavePais(m){
+  return semAcento(m.plano && (m.plano.pais || (m.plano.linha && m.plano.linha.pais)));
+}
+
 /**
  * Onde pôr cada pessoa no mapa principal:
  *  Em viagem  → país do planeamento
@@ -1133,8 +1140,28 @@ function drawMap(id){
   const m0=maps[id];
   (markers[id]||[]).forEach(x=>m0.removeLayer(x)); markers[id]=[];
   const b=[];
-  members.forEach(m=>{
+  const mapMembers = tv ? members.filter(m=>m.status==='viagem') : members;
+  const paises = new Map();
+  mapMembers.forEach(m=>{
+    if(!tv || m.status!=='viagem') return;
+    const pais = chavePais(m);
+    if(!paises.has(pais)) paises.set(pais,[]);
+    paises.get(pais).push(m);
+  });
+  mapMembers.forEach(m=>{
     const pos = posicaoDe(m); if(!pos) return;
+    if(tv && m.status==='viagem'){
+      const pais = chavePais(m);
+      const grupo = paises.get(pais);
+      const indice = grupo.indexOf(m);
+      if(grupo.length>1){
+        const ponto = m0.latLngToLayerPoint(pos);
+        ponto.x += (indice-(grupo.length-1)/2)*48;
+        const ajustado = m0.layerPointToLatLng(ponto);
+        pos[0] = ajustado.lat;
+        pos[1] = ajustado.lng;
+      }
+    }
     markers[id].push(L.marker(pos,{icon:pinFor(m),interactive:!tv}).addTo(m0));
     b.push(pos);
   });
@@ -1614,7 +1641,7 @@ function planAlerta(txt){
 }
 function planFillSubs(){ planAlerta(''); }
 
-let planTipo='viagem';   // 'viagem' (Planned) ou 'fabrica' (Site)
+let planTipo='viagem';   // 'viagem' (Travel) ou 'fabrica' (Site)
 
 const MODOS = {
   viagem : {titulo:'Planeamento de viagem',   dias:'Dias fora',      cor:'var(--orange)', destino:true,  campo:'Cliente', ph:'Nome do cliente'},
@@ -1773,6 +1800,50 @@ const PAISES_LISTA = [
   'Tailândia','Tunísia','Turquia','Vietname','África do Sul'
 ].sort((a,b)=>a.localeCompare(b,'pt'));
 
+const PAIS_ISO = {
+  alemanha:'DE', angola:'AO', 'arabia saudita':'SA', argentina:'AR', argelia:'DZ', australia:'AU', austria:'AT',
+  belgica:'BE', brasil:'BR', canada:'CA', chile:'CL', china:'CN', colombia:'CO', 'coreia do sul':'KR', dinamarca:'DK',
+  'emirados arabes unidos':'AE', espanha:'ES', 'estados unidos':'US', finlandia:'FI', franca:'FR', grecia:'GR',
+  hungria:'HU', india:'IN', indonesia:'ID', irlanda:'IE', israel:'IL', italia:'IT', japao:'JP', marrocos:'MA',
+  mexico:'MX', mocambique:'MZ', noruega:'NO', 'nova zelandia':'NZ', 'paises baixos':'NL', peru:'PE', polonia:'PL',
+  portugal:'PT', qatar:'QA', 'reino unido':'GB', 'republica checa':'CZ', romenia:'RO', singapura:'SG', suecia:'SE',
+  suica:'CH', tanzania:'TZ', tailandia:'TH', tunisia:'TN', turquia:'TR', vietname:'VN', 'africa do sul':'ZA'
+};
+const bandeiraPais = pais=>{
+  const iso=PAIS_ISO[semAcento(pais)];
+  return iso ? [...iso].map(c=>String.fromCodePoint(127397+c.charCodeAt())).join('') : '';
+};
+const PAIS_FUSO = {
+  alemanha:'Europe/Berlin', 'arabia saudita':'Asia/Riyadh', argentina:'America/Argentina/Buenos_Aires', australia:'Australia/Sydney',
+  austria:'Europe/Vienna', belgica:'Europe/Brussels', brasil:'America/Sao_Paulo', canada:'America/Toronto', chile:'America/Santiago',
+  china:'Asia/Shanghai', colombia:'America/Bogota', 'coreia do sul':'Asia/Seoul', dinamarca:'Europe/Copenhagen',
+  'emirados arabes unidos':'Asia/Dubai', espanha:'Europe/Madrid', 'estados unidos':'America/New_York', finlandia:'Europe/Helsinki',
+  franca:'Europe/Paris', grecia:'Europe/Athens', hungria:'Europe/Budapest', india:'Asia/Kolkata', indonesia:'Asia/Jakarta',
+  irlanda:'Europe/Dublin', israel:'Asia/Jerusalem', italia:'Europe/Rome', japao:'Asia/Tokyo', marrocos:'Africa/Casablanca',
+  mexico:'America/Mexico_City', mocambique:'Africa/Maputo', noruega:'Europe/Oslo', 'nova zelandia':'Pacific/Auckland',
+  'paises baixos':'Europe/Amsterdam', peru:'America/Lima', polonia:'Europe/Warsaw', portugal:'Europe/Lisbon', qatar:'Asia/Qatar',
+  'reino unido':'Europe/London', 'republica checa':'Europe/Prague', romenia:'Europe/Bucharest', singapura:'Asia/Singapore',
+  suecia:'Europe/Stockholm', suica:'Europe/Zurich', tailandia:'Asia/Bangkok', tunisia:'Africa/Tunis', turquia:'Europe/Istanbul',
+  vietname:'Asia/Ho_Chi_Minh', 'africa do sul':'Africa/Johannesburg', angola:'Africa/Luanda', argelia:'Africa/Algiers'
+};
+function minutosFuso(fuso,agora){
+  const parte=new Intl.DateTimeFormat('en-US',{timeZone:fuso,timeZoneName:'longOffset'}).formatToParts(agora)
+    .find(p=>p.type==='timeZoneName');
+  if(!parte || parte.value==='GMT') return 0;
+  const m=parte.value.match(/GMT([+-])(\d{1,2})(?::?(\d{2}))?/);
+  if(!m) return 0;
+  return (m[1]==='-'?-1:1)*(Number(m[2])*60+Number(m[3]||0));
+}
+function horaViagem(pais){
+  const agora=new Date(), fuso=PAIS_FUSO[semAcento(pais)]||'Europe/Lisbon';
+  const hora=new Intl.DateTimeFormat('pt-PT',{timeZone:fuso,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(agora);
+  const diferenca=minutosFuso(fuso,agora)-minutosFuso('Europe/Lisbon',agora);
+  if(!diferenca) return `Hora local ${hora} · mesma hora que PT`;
+  const total=Math.abs(diferenca), horas=Math.floor(total/60), minutos=total%60;
+  const delta=`${diferenca>0?'+':'-'}${horas}h${minutos?String(minutos).padStart(2,'0'):''}`;
+  return `Hora local ${hora} · ${delta} face a PT`;
+}
+
 function openMapModal(){
   tripRef = new Date();
   document.getElementById('map-scrim').classList.add('on');
@@ -1848,7 +1919,7 @@ function renderTrips(){
   document.getElementById('tlist').innerHTML = blocos.length ? [
     doMes.length ? `<div class="tsub">Ainda em ${nomeMes}</div>` + doMes.map(cartao).join('') : '',
     seguintes.length ? `<div class="tsub">Meses seguintes</div>` + seguintes.slice(0,12).map(cartao).join('') : ''
-  ].join('') : `<div class="tempty">Sem viagens planeadas.<br>Use o botão Planned para adicionar.</div>`;
+  ].join('') : `<div class="tempty">Sem viagens planeadas.<br>Use o botão Travel para adicionar.</div>`;
 }
 /** Pins das viagens planeadas do mês que está a ser visto. */
 function drawTripMap(){
