@@ -107,17 +107,20 @@ html.tv body{
 .p .nm{font-size:2rem;font-weight:600;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15}
 .p .flag{display:inline-block;margin-right:.45rem;font-size:1.8rem;line-height:1;vertical-align:.08em}
 .p .tm{font-size:1.3rem;color:var(--text-3);font-variant-numeric:tabular-nums;margin-top:.3rem}
+.p .tz-clocks{
+  flex:0 0 17rem;display:grid;grid-template-columns:1fr;gap:.45rem;
+  align-self:flex-start;height:4.6rem;min-width:0
+}
 .p .tz-clock{
-  display:grid;grid-template-columns:auto 1fr;column-gap:.55rem;align-items:center;
-  margin-top:.55rem;padding:.55rem .7rem;border-radius:.75rem;
+  position:relative;padding:.55rem .6rem;border-radius:.75rem;
   background:linear-gradient(135deg,rgba(255,178,54,.2),rgba(108,64,10,.38));
   border:1px solid rgba(255,190,76,.28);box-shadow:inset 0 1px rgba(255,255,255,.12);
-  color:#fff8e8;line-height:1.05;min-width:0
+  color:#fff8e8;line-height:1.05;min-width:0;height:100%
 }
-.p .tz-clock .flag{grid-row:span 2;font-size:1.65rem;line-height:1}
-.p .tz-place{font-size:1.05rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.p .tz-time{font-size:1.7rem;font-weight:650;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.p .tz-note{grid-column:2;margin-top:.15rem;font-size:.85rem;color:#ffd477;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p .tz-clock .flag{position:absolute;left:.6rem;top:50%;transform:translateY(-50%);font-size:1.65rem;line-height:1}
+.p .tz-place{display:block;text-align:center;font-size:1.05rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p .tz-time{display:block;margin-top:.3rem;text-align:center;font-size:1.7rem;font-weight:650;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.p .tz-note{position:absolute;right:.6rem;bottom:.7rem;font-size:calc(.85rem + 5px);color:#ffd477;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .p .sb{font-size:1.4rem;line-height:1.3;color:var(--text-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .p .sb b{color:var(--purple);font-weight:500}
 .p .pfoot{margin-top:auto;display:flex;align-items:center;gap:1rem}
@@ -1033,10 +1036,10 @@ function renderTV(){
           <div class="m">
             <div class="nm">${esc(shortName(card.name))}</div>
             <div class="tm">${marcaTempo(card)}</div>
-            ${k==='viagem' && card.plano?.pais ? horaViagem(card.plano.pais) : ''}
           </div>
+          ${k==='viagem' && card.plano?.pais ? horaViagem(card.plano.pais) : ''}
         </div>
-        ${k==='fabrica' ? '' : `<div class="sb">${(k==='viagem' || k==='visitas') && card.plano?.pais ? `<span class="flag" title="${esc(card.plano.pais)}">${bandeiraPais(card.plano.pais)}</span>` : ''}${second}</div>`}
+        ${k==='fabrica' ? '' : `<div class="sb">${second}</div>`}
         <div class="pfoot">
           <div class="meter" title="Fábrica ${m.metrics.fabrica||0} · Home ${m.metrics.home||0} · Viagem ${m.metrics.viagem||0} · Férias ${m.metrics.ferias||0}">
             <i class="${k==='fabrica'?'act':''}" style="flex:${(m.metrics.fabrica||0)+.2};background:var(--green)"></i>
@@ -1846,18 +1849,21 @@ function minutosFuso(fuso,agora){
 }
 function horaViagem(pais){
   const agora=new Date(), fuso=PAIS_FUSO[semAcento(pais)]||'Europe/Lisbon';
-  const hora=new Intl.DateTimeFormat('pt-PT',{timeZone:fuso,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(agora);
+  const formatarHora=timeZone=>new Intl.DateTimeFormat('pt-PT',{timeZone,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(agora);
+  const hora=formatarHora(fuso);
   const diferenca=minutosFuso(fuso,agora)-minutosFuso('Europe/Lisbon',agora);
-  const nota=!diferenca ? 'Hoje · mesma hora que PT' : (()=>{
+  const nota=!diferenca ? '--' : (()=>{
     const total=Math.abs(diferenca), horas=Math.floor(total/60), minutos=total%60;
     const delta=`${diferenca>0?'+':'-'}${horas}h${minutos?String(minutos).padStart(2,'0'):''}`;
-    return `Hoje · ${delta} face a PT`;
+    return delta;
   })();
-  return `<div class="tz-clock" title="Hora local em ${esc(pais)}">
-    <span class="flag">${bandeiraPais(pais)}</span>
-    <span class="tz-place">${esc(pais)}</span>
-    <strong class="tz-time">${hora}</strong>
-    <span class="tz-note">${nota}</span>
+  return `<div class="tz-clocks">
+    <div class="tz-clock" title="Hora local em ${esc(pais)}">
+      <span class="flag">${bandeiraPais(pais)}</span>
+      <span class="tz-place">${esc(pais)}</span>
+      <strong class="tz-time">${hora}</strong>
+      <span class="tz-note">${nota}</span>
+    </div>
   </div>`;
 }
 
