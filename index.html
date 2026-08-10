@@ -97,7 +97,7 @@ html.tv body{
 .p{
   cursor:pointer;position:relative;display:flex;flex-direction:column;gap:1rem;
   padding:1.4rem 1.4rem 1.2rem;border-radius:1.4rem;background:var(--fill);
-  height:15.6rem;flex:0 1 15.6rem;min-height:5.4rem;overflow:hidden;
+  height:15.6rem;flex:0 1 15.6rem;min-height:5.4rem;overflow:hidden;container-type:inline-size;
 }
 .p .ptop{display:flex;align-items:center;gap:1.2rem;min-width:0}
 .p .av{position:relative;width:6.4rem;height:6.4rem;border-radius:50%;overflow:hidden;background:var(--fill-2);flex:none;box-shadow:0 0 0 .22rem var(--c)}
@@ -108,7 +108,7 @@ html.tv body{
 .p .flag{display:inline-block;margin-right:.45rem;font-size:1.8rem;line-height:1;vertical-align:.08em}
 .p .tm{font-size:1.3rem;color:var(--text-3);font-variant-numeric:tabular-nums;margin-top:.3rem}
 .p .tz-clocks{
-  flex:0 0 17rem;display:grid;grid-template-columns:1fr;gap:.45rem;
+  flex:0 1 clamp(9rem,32cqw,17rem);width:clamp(9rem,32cqw,17rem);display:grid;grid-template-columns:1fr;gap:.45rem;
   align-self:flex-start;height:4.6rem;min-width:0
 }
 .p .tz-clock{
@@ -121,6 +121,12 @@ html.tv body{
 .p .tz-place{display:block;text-align:center;font-size:1.05rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .p .tz-time{display:block;margin-top:.3rem;text-align:center;font-size:1.7rem;font-weight:650;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .p .tz-note{position:absolute;right:.6rem;bottom:.7rem;font-size:calc(.85rem + 5px);color:#ffd477;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+@container (max-width:24rem){
+  .p .ptop{flex-wrap:wrap;align-content:flex-start}
+  .p .m{flex:1 1 calc(100% - 7.6rem);min-width:0}
+  .p .tz-clocks{flex:1 1 100%;width:100%;height:4.6rem}
+}
 .p .sb{font-size:1.4rem;line-height:1.3;color:var(--text-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .p .sb b{color:var(--purple);font-weight:500}
 .p .pfoot{margin-top:auto;display:flex;align-items:center;gap:1rem}
