@@ -139,7 +139,6 @@ html.tv body{
 .tile{background:var(--surface);border-radius:1.6rem;overflow:hidden;display:flex;flex-direction:column;min-height:0;box-shadow:var(--shadow)}
 #tvmap{flex:1;min-height:0;background:var(--map-bg)}
 .leaflet-container{background:var(--map-bg);font-family:inherit}
-.leaflet-tile{outline:1px solid transparent;backface-visibility:hidden}
 /* tiles: usamos mapas já escuros/claros em vez de filtros CSS (Tizen não os aplica) */
 .leaflet-control-attribution{background:transparent!important;color:var(--text-3)!important;font-size:.85rem!important}
 .leaflet-control-attribution a{color:var(--text-2)!important}
@@ -1046,7 +1045,7 @@ function renderTV(){
           </div>
           ${k==='viagem' && card.plano?.pais ? horaViagem(card.plano.pais) : ''}
         </div>
-        ${k==='fabrica' ? '' : `<div class="sb">${second}</div>`}
+        ${k==='fabrica' ? '' : `<div class="sb">${(k==='viagem' || k==='visitas') && card.plano?.pais ? `<span class="flag" title="${esc(card.plano.pais)}">${bandeiraPais(card.plano.pais)}</span>` : ''}${second}</div>`}
         <div class="pfoot">
           <div class="meter" title="Fábrica ${m.metrics.fabrica||0} · Home ${m.metrics.home||0} · Viagem ${m.metrics.viagem||0} · Férias ${m.metrics.ferias||0}">
             <i class="${k==='fabrica'?'act':''}" style="flex:${(m.metrics.fabrica||0)+.2};background:var(--green)"></i>
@@ -1867,7 +1866,6 @@ function horaViagem(pais){
   })();
   return `<div class="tz-clocks">
     <div class="tz-clock" title="Hora local em ${esc(pais)}">
-      <span class="flag">${bandeiraPais(pais)}</span>
       <span class="tz-place">${esc(pais)}</span>
       <strong class="tz-time">${hora}</strong>
       <span class="tz-note">${nota}</span>
