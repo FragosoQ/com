@@ -107,7 +107,17 @@ html.tv body{
 .p .nm{font-size:2rem;font-weight:600;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15}
 .p .flag{display:inline-block;margin-right:.45rem;font-size:1.8rem;line-height:1;vertical-align:.08em}
 .p .tm{font-size:1.3rem;color:var(--text-3);font-variant-numeric:tabular-nums;margin-top:.3rem}
-.p .tz{font-size:1.2rem;color:var(--text-2);font-variant-numeric:tabular-nums;margin-top:.2rem}
+.p .tz-clock{
+  display:grid;grid-template-columns:auto 1fr;column-gap:.55rem;align-items:center;
+  margin-top:.55rem;padding:.55rem .7rem;border-radius:.75rem;
+  background:linear-gradient(135deg,rgba(255,178,54,.2),rgba(108,64,10,.38));
+  border:1px solid rgba(255,190,76,.28);box-shadow:inset 0 1px rgba(255,255,255,.12);
+  color:#fff8e8;line-height:1.05;min-width:0
+}
+.p .tz-clock .flag{grid-row:span 2;font-size:1.65rem;line-height:1}
+.p .tz-place{font-size:1.05rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p .tz-time{font-size:1.7rem;font-weight:650;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.p .tz-note{grid-column:2;margin-top:.15rem;font-size:.85rem;color:#ffd477;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .p .sb{font-size:1.4rem;line-height:1.3;color:var(--text-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .p .sb b{color:var(--purple);font-weight:500}
 .p .pfoot{margin-top:auto;display:flex;align-items:center;gap:1rem}
@@ -1023,7 +1033,7 @@ function renderTV(){
           <div class="m">
             <div class="nm">${esc(shortName(card.name))}</div>
             <div class="tm">${marcaTempo(card)}</div>
-            ${k==='viagem' && card.plano?.pais ? `<div class="tz">${horaViagem(card.plano.pais)}</div>` : ''}
+            ${k==='viagem' && card.plano?.pais ? horaViagem(card.plano.pais) : ''}
           </div>
         </div>
         ${k==='fabrica' ? '' : `<div class="sb">${(k==='viagem' || k==='visitas') && card.plano?.pais ? `<span class="flag" title="${esc(card.plano.pais)}">${bandeiraPais(card.plano.pais)}</span>` : ''}${second}</div>`}
@@ -1838,10 +1848,17 @@ function horaViagem(pais){
   const agora=new Date(), fuso=PAIS_FUSO[semAcento(pais)]||'Europe/Lisbon';
   const hora=new Intl.DateTimeFormat('pt-PT',{timeZone:fuso,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(agora);
   const diferenca=minutosFuso(fuso,agora)-minutosFuso('Europe/Lisbon',agora);
-  if(!diferenca) return `Hora local ${hora} · mesma hora que PT`;
-  const total=Math.abs(diferenca), horas=Math.floor(total/60), minutos=total%60;
-  const delta=`${diferenca>0?'+':'-'}${horas}h${minutos?String(minutos).padStart(2,'0'):''}`;
-  return `Hora local ${hora} · ${delta} face a PT`;
+  const nota=!diferenca ? 'Hoje · mesma hora que PT' : (()=>{
+    const total=Math.abs(diferenca), horas=Math.floor(total/60), minutos=total%60;
+    const delta=`${diferenca>0?'+':'-'}${horas}h${minutos?String(minutos).padStart(2,'0'):''}`;
+    return `Hoje · ${delta} face a PT`;
+  })();
+  return `<div class="tz-clock" title="Hora local em ${esc(pais)}">
+    <span class="flag">${bandeiraPais(pais)}</span>
+    <span class="tz-place">${esc(pais)}</span>
+    <strong class="tz-time">${hora}</strong>
+    <span class="tz-note">${nota}</span>
+  </div>`;
 }
 
 function openMapModal(){
