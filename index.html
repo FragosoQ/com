@@ -115,12 +115,12 @@ html.tv body{
   position:relative;padding:.55rem .6rem;border-radius:.75rem;
   background:linear-gradient(135deg,rgba(255,178,54,.2),rgba(108,64,10,.38));
   border:1px solid rgba(255,190,76,.28);box-shadow:inset 0 1px rgba(255,255,255,.12);
-  color:#fff8e8;line-height:1.05;min-width:0;height:100%
+  color:#fff8e8;line-height:1.05;min-width:0;height:100%;overflow:hidden
 }
 .p .tz-clock .flag{position:absolute;left:.6rem;top:50%;transform:translateY(-50%);font-size:1.65rem;line-height:1}
 .p .tz-place{display:block;text-align:center;font-size:1.05rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .p .tz-time{display:block;margin-top:.3rem;text-align:center;font-size:1.7rem;font-weight:650;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.p .tz-note{position:absolute;right:.6rem;bottom:.7rem;font-size:calc(.85rem + 5px);color:#ffd477;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p .tz-note{position:absolute;left:calc(50% + 2.3rem);right:.6rem;bottom:.7rem;font-size:calc(.85rem + 5px);color:#ffd477;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 @container (max-width:24rem){
   .p .ptop{flex-wrap:wrap;align-content:flex-start}
@@ -139,6 +139,7 @@ html.tv body{
 .tile{background:var(--surface);border-radius:1.6rem;overflow:hidden;display:flex;flex-direction:column;min-height:0;box-shadow:var(--shadow)}
 #tvmap{flex:1;min-height:0;background:var(--map-bg)}
 .leaflet-container{background:var(--map-bg);font-family:inherit}
+.leaflet-tile{width:258px!important;height:258px!important;margin:-1px!important;max-width:none!important}
 /* tiles: usamos mapas já escuros/claros em vez de filtros CSS (Tizen não os aplica) */
 .leaflet-control-attribution{background:transparent!important;color:var(--text-3)!important;font-size:.85rem!important}
 .leaflet-control-attribution a{color:var(--text-2)!important}
