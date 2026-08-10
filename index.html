@@ -1000,17 +1000,27 @@ function avatarHtml(m,cls='av'){
 /* ═══ TV ═══ */
 function renderTV(){
   ORDER.forEach(k=>{
-    const st=STATUS[k], list=members.filter(m=>m.status===k);
+    const st=STATUS[k], list=members.filter(m=>m.status===k ||
+      (k==='fabrica' && m.planoFabrica) || (k==='visitas' && m.planoVisita));
     const rows = list.length ? list.map(m=>{
+      const card = {...m,
+        status:k,
+        plano:k==='fabrica' ? (m.planoFabrica||m.plano) :
+          k==='visitas' ? (m.planoVisita||m.plano) : m.plano,
+        obs:k==='fabrica' && m.planoFabrica ?
+          (m.planoFabrica.linha.obs||'Presença planeada na fábrica') :
+          k==='visitas' && m.planoVisita ?
+            ([m.planoVisita.linha.visita,m.planoVisita.linha.pais].filter(Boolean).join(' · ')||'Visita planeada') : m.obs
+      };
       const sub=m.subId?members.find(x=>x.id===m.subId):null;
-      const second = sub ? `<b>Substituído por ${esc(shortName(sub.name))}</b>` : esc(m.obs||st.sub);
-      const diasViagem = (m.metrics&&m.metrics.viagem)||0;   // o contador é sempre dias Em viagem
-      return `<div class="p" style="--c:${st.c}" onclick="openPersonCal(${m.id})">
+      const second = sub ? `<b>Substituído por ${esc(shortName(sub.name))}</b>` : esc(card.obs||st.sub);
+      const diasViagem = (card.metrics&&card.metrics.viagem)||0;   // o contador é sempre dias Em viagem
+      return `<div class="p" style="--c:${st.c}" onclick="openPersonCal(${card.id})">
         <div class="ptop">
-          ${avatarHtml(m)}
+          ${avatarHtml(card)}
           <div class="m">
-            <div class="nm">${esc(shortName(m.name))}</div>
-            <div class="tm">${marcaTempo(m)}</div>
+            <div class="nm">${esc(shortName(card.name))}</div>
+            <div class="tm">${marcaTempo(card)}</div>
           </div>
         </div>
         <div class="sb">${second}</div>
