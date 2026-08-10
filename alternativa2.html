@@ -639,7 +639,7 @@ input[type=text]::placeholder{color:var(--text-3)}
           </button>
         </div>
       </div>
-      <div class="tile feed">
+      <div class="feed">
         <h3>Últimos registos</h3>
         <div id="tv-feed"></div>
       </div>
@@ -955,7 +955,7 @@ function renderTV(){
       <div class="col-body">${rows}</div>`;
   });
 
-  document.getElementById('tv-feed').innerHTML = logs.slice(0,5).map(l=>`
+  document.getElementById('tv-feed').innerHTML = logs.slice(0,3).map(l=>`
     <div class="f" style="--c:${STATUS[l.status].c}">
       <i></i>
       <span class="nm">${esc(shortName(l.memberName))}</span>
@@ -1079,7 +1079,7 @@ function renderPhoneBoard(){
   }).join('');
 
   const lg=document.getElementById('ph-logs');
-  if(lg) lg.innerHTML = logs.length ? logs.slice(0,12).map(l=>{
+  if(lg) lg.innerHTML = logs.length ? logs.slice(0,3).map(l=>{
     const extra=(l.subName&&l.subName!=='-')?` · substituído por ${esc(shortName(l.subName))}`:'';
     return `<div class="logrow" style="--c:${STATUS[l.status].c}">
       <i></i>
