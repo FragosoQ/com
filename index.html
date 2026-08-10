@@ -139,6 +139,7 @@ html.tv body{
 .tile{background:var(--surface);border-radius:1.6rem;overflow:hidden;display:flex;flex-direction:column;min-height:0;box-shadow:var(--shadow)}
 #tvmap{flex:1;min-height:0;background:var(--map-bg)}
 .leaflet-container{background:var(--map-bg);font-family:inherit}
+.leaflet-tile{outline:1px solid transparent;backface-visibility:hidden}
 /* tiles: usamos mapas já escuros/claros em vez de filtros CSS (Tizen não os aplica) */
 .leaflet-control-attribution{background:transparent!important;color:var(--text-3)!important;font-size:.85rem!important}
 .leaflet-control-attribution a{color:var(--text-2)!important}
@@ -1139,7 +1140,7 @@ function posicaoDe(m){
   if((m.status==='viagem' || m.status==='visitas') && m.plano){
     const pais = m.plano.pais || (m.plano.linha && m.plano.linha.pais);
     const c = coordPais(pais);
-    if(c) return afasta(c,m.id);
+    if(c) return [c[0],c[1]];
   }
   if(m.lat && m.lng) return [m.lat,m.lng];
   return afasta(FABRICA,m.id);
