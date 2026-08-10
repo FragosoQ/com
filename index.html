@@ -106,10 +106,14 @@ html.tv body{
 .p .m{flex:1;min-width:0}
 .p .nm{font-size:2rem;font-weight:600;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15}
 .p .flag{display:inline-block;margin-right:.45rem;font-size:1.8rem;line-height:1;vertical-align:.08em}
-.p .tm{font-size:1.3rem;color:var(--text-3);font-variant-numeric:tabular-nums;margin-top:.3rem}
+.p .tm-row{display:flex;align-items:center;justify-content:space-between;gap:.8rem;margin-top:.3rem}
+.p .tm{font-size:1.3rem;color:var(--text-3);font-variant-numeric:tabular-nums;min-width:0}
+.p.p-clock{height:16.4rem;flex:0 1 16.4rem}
+.p.p-clock .ptop{align-items:flex-start}
+.p.p-clock .av{margin-top:.2rem}
 .p .tz-clocks{
-  flex:0 1 clamp(9rem,32cqw,17rem);width:clamp(9rem,32cqw,17rem);display:grid;grid-template-columns:1fr;gap:.45rem;
-  align-self:flex-start;height:4.6rem;min-width:0
+  width:clamp(9rem,32cqw,17rem);display:grid;grid-template-columns:1fr;gap:.45rem;
+  flex:none;height:4.6rem;min-width:0
 }
 .p .tz-clock{
   position:relative;padding:.55rem .6rem;border-radius:.75rem;
@@ -121,12 +125,6 @@ html.tv body{
 .p .tz-place{display:block;text-align:center;font-size:1.05rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .p .tz-time{display:block;margin-top:.3rem;text-align:center;font-size:1.7rem;font-weight:650;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .p .tz-note{position:absolute;left:calc(50% + 2.3rem);right:.6rem;bottom:.7rem;font-size:calc(.85rem + 5px);color:#ffd477;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-@container (max-width:24rem){
-  .p .ptop{flex-wrap:wrap;align-content:flex-start}
-  .p .m{flex:1 1 calc(100% - 7.6rem);min-width:0}
-  .p .tz-clocks{flex:1 1 100%;width:100%;height:4.6rem}
-}
 .p .sb{font-size:1.4rem;line-height:1.3;color:var(--text-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .p .sb b{color:var(--purple);font-weight:500}
 .p .pfoot{margin-top:auto;display:flex;align-items:center;gap:1rem}
@@ -1044,14 +1042,17 @@ function renderTV(){
       const sub=m.subId?members.find(x=>x.id===m.subId):null;
       const second = sub ? `<b>Substituído por ${esc(shortName(sub.name))}</b>` : esc(card.obs||st.sub);
       const diasViagem = (card.metrics&&card.metrics.viagem)||0;   // o contador é sempre dias Em viagem
-      return `<div class="p" style="--c:${st.c}" onclick="openPersonCal(${card.id})">
+      const temClock = k==='viagem' && card.plano?.pais;
+      return `<div class="p${temClock?' p-clock':''}" style="--c:${st.c}" onclick="openPersonCal(${card.id})">
         <div class="ptop">
           ${avatarHtml(card)}
           <div class="m">
             <div class="nm">${esc(shortName(card.name))}</div>
-            <div class="tm">${marcaTempo(card)}</div>
+            <div class="tm-row">
+              <div class="tm">${marcaTempo(card)}</div>
+              ${temClock ? horaViagem(card.plano.pais) : ''}
+            </div>
           </div>
-          ${k==='viagem' && card.plano?.pais ? horaViagem(card.plano.pais) : ''}
         </div>
         ${k==='fabrica' ? '' : `<div class="sb">${(k==='viagem' || k==='visitas') && card.plano?.pais ? `<span class="flag" title="${esc(card.plano.pais)}">${bandeiraPais(card.plano.pais)}</span>` : ''}${second}</div>`}
         <div class="pfoot">
