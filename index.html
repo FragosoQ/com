@@ -111,6 +111,7 @@ html.tv body{
 .p.p-clock{height:16.4rem;flex:0 1 16.4rem}
 .p.p-clock .ptop{align-items:flex-start}
 .p.p-clock .av{margin-top:.2rem}
+.p.p-compact{height:11.6rem;flex:0 1 11.6rem}
 .p .tz-clocks{
   width:clamp(9rem,32cqw,17rem);display:grid;grid-template-columns:1fr;gap:.45rem;
   flex:none;height:4.6rem;min-width:0
@@ -123,8 +124,9 @@ html.tv body{
 }
 .p .tz-clock .flag{position:absolute;left:.6rem;top:50%;transform:translateY(-50%);font-size:1.65rem;line-height:1}
 .p .tz-place{display:block;text-align:center;font-size:1.05rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.p .tz-time{display:block;margin-top:.3rem;text-align:center;font-size:1.7rem;font-weight:650;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.p .tz-note{position:absolute;left:calc(50% + 2.3rem);right:.6rem;bottom:.7rem;font-size:calc(.85rem + 5px);color:#ffd477;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p .tz-time-row{display:flex;align-items:baseline;justify-content:center;gap:.3rem;margin-top:.3rem;min-width:0}
+.p .tz-time{font-size:1.7rem;font-weight:650;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.p .tz-note{font-size:1rem;color:#ffd477;white-space:nowrap;flex:none}
 .p .sb{font-size:1.4rem;line-height:1.3;color:var(--text-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .p .sb b{color:var(--purple);font-weight:500}
 .p .pfoot{margin-top:auto;display:flex;align-items:center;gap:1rem}
@@ -1043,7 +1045,8 @@ function renderTV(){
       const second = sub ? `<b>Substituído por ${esc(shortName(sub.name))}</b>` : esc(card.obs||st.sub);
       const diasViagem = (card.metrics&&card.metrics.viagem)||0;   // o contador é sempre dias Em viagem
       const temClock = k==='viagem' && card.plano?.pais;
-      return `<div class="p${temClock?' p-clock':''}" style="--c:${st.c}" onclick="openPersonCal(${card.id})">
+      const semSb = k==='fabrica';
+      return `<div class="p${temClock?' p-clock':''}${semSb?' p-compact':''}" style="--c:${st.c}" onclick="openPersonCal(${card.id})">
         <div class="ptop">
           ${avatarHtml(card)}
           <div class="m">
@@ -1892,8 +1895,10 @@ function horaViagem(pais){
   return `<div class="tz-clocks">
     <div class="tz-clock" title="Hora local em ${esc(pais)}">
       <span class="tz-place">${esc(pais)}</span>
-      <strong class="tz-time">${hora}</strong>
-      <span class="tz-note">${nota}</span>
+      <div class="tz-time-row">
+        <strong class="tz-time">${hora}</strong>
+        <span class="tz-note">${nota}</span>
+      </div>
     </div>
   </div>`;
 }
