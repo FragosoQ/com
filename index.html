@@ -1082,6 +1082,7 @@ function pinFor(m){
     iconSize:[40,40], iconAnchor:[20,20]});
 }
 const FABRICA = [40.5751,-8.4442];   // Somengil, Aveiro
+const MAP_PIN_GAP = 48;
 
 /* ── Tiles ────────────────────────────────────────────────────────────
    Em vez de escurecer o OpenStreetMap com filter:invert() — que os
@@ -1175,7 +1176,7 @@ function drawMap(id){
       const indice = grupo.indexOf(m);
       if(grupo.length>1){
         const ponto = m0.latLngToLayerPoint(pos);
-        ponto.x += (indice-(grupo.length-1)/2)*48;
+        ponto.x += (indice-(grupo.length-1)/2)*MAP_PIN_GAP;
         const ajustado = m0.layerPointToLatLng(ponto);
         pos[0] = ajustado.lat;
         pos[1] = ajustado.lng;
