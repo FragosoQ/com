@@ -154,6 +154,7 @@ html:not(.tv) .leaflet-tile{width:258px!important;height:258px!important;margin:
 .pin .disc{width:3.1rem;height:3.1rem;border-radius:50%;overflow:hidden;position:relative;border:.22rem solid var(--c);background:var(--surface);box-shadow:0 .4rem 1.2rem rgba(0,0,0,.4)}
 .pin .disc img{position:relative;z-index:1;width:100%;height:100%;object-fit:cover;display:block}
 .pin .disc .ini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:600;color:var(--text-2)}
+.pin .cnt{position:absolute;left:3.35rem;top:50%;transform:translateY(-50%);min-width:1.6rem;height:1.6rem;padding:0 .35rem;border-radius:1rem;background:var(--surface);border:.16rem solid var(--text-2);display:flex;align-items:center;justify-content:center;font-size:1.05rem;font-weight:700;color:var(--text);box-shadow:0 .3rem .9rem rgba(0,0,0,.35);white-space:nowrap}
 
 .qr{flex:none;display:flex;flex-direction:row;align-items:stretch;gap:0;padding:0}
 .qr .code{width:8.8rem;height:8.8rem;border-radius:.9rem;background:#fff;padding:.55rem;flex:none;display:flex;align-items:center;justify-content:center;overflow:hidden}
@@ -1088,15 +1089,14 @@ function renderTV(){
     </div>`).join('') || `<div class="f" style="color:rgba(235,235,245,.3)">Sem registos hoje</div>`;
 }
 
-/** `desloc` = deslocação horizontal em pixéis de ecrã (independente do zoom). */
-function pinFor(m,desloc){
-  const dx = desloc || 0;
+/** `count` = quantas pessoas partilham este pin (mostra uma label ao lado quando >1). */
+function pinFor(m,count){
+  const badge = (count>1) ? `<span class="cnt">${count}</span>` : '';
   return L.divIcon({className:'pin',
-    html:`<div class="disc" style="--c:${(STATUS[m.status]||STATUS.fabrica).c}"><span class="ini">${initials(m.name)}</span>${m.photo?`<img src="${esc(m.photo)}" alt="" onerror="this.remove()">`:''}</div>`,
-    iconSize:[40,40], iconAnchor:[20-dx,20]});
+    html:`<div class="disc" style="--c:${(STATUS[m.status]||STATUS.fabrica).c}"><span class="ini">${initials(m.name)}</span>${m.photo?`<img src="${esc(m.photo)}" alt="" onerror="this.remove()">`:''}</div>${badge}`,
+    iconSize:[40,40], iconAnchor:[20,20]});
 }
 const FABRICA = [40.5751,-8.4442];   // Somengil, Aveiro
-const MAP_PIN_GAP = 48;
 
 /* ── Tiles ────────────────────────────────────────────────────────────
    Em vez de escurecer o OpenStreetMap com filter:invert() — que os
@@ -1185,10 +1185,9 @@ function drawMap(id){
   (markers[id]||[]).forEach(x=>m0.removeLayer(x)); markers[id]=[];
   const b=[];
   const mapMembers = tv ? members.filter(m=>m.status==='viagem') : members;
-  /* Quem está no mesmo país partilha a mesma coordenada: separamos os pins
-     em ecrã (48px entre centros). A deslocação vive no ícone e não na
-     coordenada, por isso mantém-se exacta seja qual for o zoom escolhido
-     pelo fitBounds a seguir.                                              */
+  /* Quem está no mesmo país partilha a mesma coordenada: em vez de espalhar
+     os pins em ecrã, mostramos um único ícone com uma label de contagem
+     ao lado, para o mapa ficar limpo mesmo com muita gente no mesmo sítio. */
   const pontos = [];
   mapMembers.forEach(m=>{
     const pos = posicaoDe(m); if(!pos) return;
@@ -1202,18 +1201,20 @@ function drawMap(id){
     if(!paises.has(p.pais)) paises.set(p.pais,[]);
     paises.get(p.pais).push(p);
   });
-  let folga = 0;
+  const feitos = new Set();
   pontos.forEach(p=>{
-    const grupo = p.pais ? paises.get(p.pais) : null;
-    const desloc = (grupo && grupo.length>1)
-      ? (grupo.indexOf(p)-(grupo.length-1)/2)*MAP_PIN_GAP
-      : 0;
-    folga = Math.max(folga, Math.abs(desloc));
-    markers[id].push(L.marker(p.pos,{icon:pinFor(p.m,desloc),interactive:!tv}).addTo(m0));
+    if(p.pais){
+      if(feitos.has(p.pais)) return;         // grupo já desenhado com um único pin
+      feitos.add(p.pais);
+      const grupo = paises.get(p.pais);
+      markers[id].push(L.marker(p.pos,{icon:pinFor(grupo[0].m,grupo.length),interactive:!tv}).addTo(m0));
+      b.push(p.pos);
+      return;
+    }
+    markers[id].push(L.marker(p.pos,{icon:pinFor(p.m,1),interactive:!tv}).addTo(m0));
     b.push(p.pos);
   });
-  folga = Math.min(folga, (box.clientWidth||600)*0.25);   // a margem nunca engole o mapa
-  if(b.length) m0.fitBounds(b,{padding:[35+folga,35],maxZoom:9});
+  if(b.length) m0.fitBounds(b,{padding:[35,35],maxZoom:9});
 }
 
 function urlDeRegisto(){
