@@ -1080,7 +1080,8 @@ function renderTV(){
       const diasViagem = (card.metrics&&card.metrics.viagem)||0;   // o contador é sempre dias Em viagem
       const temClock = k==='viagem' && card.plano?.pais;
       const semSb = k==='fabrica' || k==='home';
-      return `<div class="p${temClock?' p-clock':''}${semSb?' p-compact':''}" style="--c:${st.c}" onclick="openPersonCal(${card.id})">
+      const compacto = k==='fabrica';
+      return `<div class="p${temClock?' p-clock':''}${compacto?' p-compact':''}" style="--c:${st.c}" onclick="openPersonCal(${card.id})">
         <div class="ptop">
           ${avatarHtml(card)}
           <div class="m">
