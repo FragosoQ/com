@@ -792,6 +792,14 @@ input[type=text]::placeholder{color:var(--text-3)}
         <div class="inset" id="picker"></div>
         <input type="hidden" id="f-where">
 
+        <div id="dest-block" hidden>
+          <div class="lbl">País</div>
+          <div class="inset"><div class="frow">
+            <label for="f-pais">Destino</label>
+            <select id="f-pais"><option value="" disabled selected>Escolher</option></select>
+          </div></div>
+        </div>
+
         <div id="sub-block" hidden>
           <div class="lbl">Quem assume as suas funções</div>
           <div class="inset"><div class="frow">
@@ -1366,12 +1374,20 @@ function pickWhere(k){
   document.getElementById('f-where').value=k;
   ORDER_CHECKIN.forEach(x=>document.getElementById('opt-'+x).setAttribute('aria-pressed',String(x===k)));
   document.getElementById('sub-block').hidden=(k!=='ferias');
+  document.getElementById('dest-block').hidden=(k!=='viagem');
   if(k==='ferias') fillSubs();
+  if(k==='viagem') fillPaises();
 }
 function fillSubs(){
   const me=parseInt(document.getElementById('f-member').value)||null;
   document.getElementById('f-sub').innerHTML='<option value="" disabled selected>Escolher</option>'+
     members.filter(m=>m.id!==me).map(m=>`<option value="${m.id}">${esc(shortName(m.name))}</option>`).join('');
+}
+function fillPaises(){
+  const sel=document.getElementById('f-pais');
+  if(sel.options.length>1) return;
+  sel.innerHTML='<option value="" disabled selected>Escolher</option>'+
+    PAISES_LISTA.map(p=>`<option value="${p}">${p}</option>`).join('');
 }
 function onMemberChange(){ hideAlert(); if(document.getElementById('f-where').value==='ferias') fillSubs(); }
 function showAlert(t){ document.getElementById('alert-text').textContent=t; document.getElementById('alert').classList.add('on'); }
@@ -1398,6 +1414,7 @@ function backToForm(){
   document.getElementById('form').reset();
   document.getElementById('f-where').value='';
   document.getElementById('sub-block').hidden=true;
+  document.getElementById('dest-block').hidden=true;
   ORDER_CHECKIN.forEach(x=>document.getElementById('opt-'+x).setAttribute('aria-pressed','false'));
   hideAlert(); renderPhoneBoard();
 }
@@ -1407,11 +1424,13 @@ function submitCheckin(e){
   const id=parseInt(document.getElementById('f-member').value);
   const where=document.getElementById('f-where').value;
   const subId=(where==='ferias'&&document.getElementById('f-sub').value)?parseInt(document.getElementById('f-sub').value):null;
+  const pais=(where==='viagem')?document.getElementById('f-pais').value:'';
   const note=document.getElementById('f-note').value.trim();
 
   if(!id) return showAlert('Escolha o seu nome para continuar.');
   if(!where) return showAlert('Escolha onde trabalha hoje.');
   if(where==='ferias'&&!subId) return showAlert('Nas férias tem de indicar quem assume as suas funções.');
+  if(where==='viagem'&&!pais) return showAlert('Em viagem tem de indicar o país.');
 
   const m=members.find(x=>x.id===id);
   if(!m) return showAlert('Não encontrámos esse nome na lista.');
@@ -1424,7 +1443,8 @@ function submitCheckin(e){
   m.lng=gps.lng+(Math.random()-.5)*0.002;
   const n=new Date();
   m.lastUpdate=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')} ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
-  m.obs=note||STATUS[where].label;
+  m.obs = pais ? (note ? `${pais} · ${note}` : pais) : (note||STATUS[where].label);
+  m.plano = pais ? {tipo:'viagem', pais, cliente:'', hoje:true, total:1, ini:isoHoje(), fim:isoHoje(), dias:[isoHoje()], linha:{pais}} : null;
 
   const sub=subId?members.find(x=>x.id===subId):null;
   logs.unshift({memberName:m.name,status:where,subName:sub?sub.name:'-',time:m.lastUpdate,lat:m.lat.toFixed(4),lng:m.lng.toFixed(4),obs:m.obs});
@@ -1486,6 +1506,7 @@ function backToFormSilent(){
   document.getElementById('form').reset();
   document.getElementById('f-where').value='';
   document.getElementById('sub-block').hidden=true;
+  document.getElementById('dest-block').hidden=true;
   ORDER_CHECKIN.forEach(x=>document.getElementById('opt-'+x).setAttribute('aria-pressed','false'));
   hideAlert();
 }
@@ -1603,6 +1624,13 @@ function normTime(v){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
+/* O check-in de "Em viagem" guarda o país no início das Observações
+   ("País" ou "País · nota"). Recupera-o, se for um país conhecido. */
+function paisDeObs(obs){
+  const primeira = String(obs||'').split(' · ')[0].trim();
+  return coordPais(primeira) ? primeira : null;
+}
+
 function aplicarDados(onb, plan, vis){
   const norm = t=>String(t||'').trim().toLowerCase();
   const acha = nome=>members.find(m=>norm(m.name)===norm(nome))
@@ -1688,12 +1716,16 @@ function aplicarDados(onb, plan, vis){
 
     // só enriquece o card (bandeira/relógio/datas) quando o check-in de
     // hoje já é do mesmo tipo do plano E o plano cobre o dia de hoje —
-    // nunca é isto que decide o status.
+    // nunca é isto que decide o status. Sem plano, um check-in "Em viagem"
+    // ainda mostra bandeira/relógio a partir do país escolhido no registo.
     const planoDeHoje = m.status==='fabrica' ? m.planoFabrica
                        : m.status==='viagem' ? m.planoViagem
                        : m.status==='ferias' ? m.planoFerias
                        : null;
-    m.plano = (planoDeHoje && planoDeHoje.dias.includes(hoje)) ? planoDeHoje : null;
+    const paisCheckin = m.status==='viagem' ? paisDeObs(m.obs) : null;
+    m.plano = (planoDeHoje && planoDeHoje.dias.includes(hoje)) ? planoDeHoje
+            : paisCheckin ? {tipo:'viagem', pais:paisCheckin, cliente:'', hoje:true, total:1, ini:hoje, fim:hoje, dias:[hoje], linha:{pais:paisCheckin}}
+            : null;
   });
 
   logs = onb.slice().reverse()
