@@ -1602,20 +1602,24 @@ function aplicarDados(onb, plan, vis){
     const dia = diaISO(row.dia); if(!dia || !dia.startsWith(mes)) return;
     const alvo = ehFabrica(row) ? fabricaMes : (ehViagem(row) ? viagemMes : null);
     if(!alvo) return;
-    if(!alvo.has(m.id)) alvo.set(m.id,{dias:new Set(),linhas:[]});
+    if(!alvo.has(m.id)) alvo.set(m.id,{dias:new Set(),linhas:[],ultimo:''});
     const v = alvo.get(m.id);
     v.dias.add(dia);
     v.linhas.push({...row, dia});
+    const t = normTime(row.time);
+    if(t > v.ultimo) v.ultimo = t;     // hora em que este plano foi submetido
   });
 
   const visitasMes = new Map();
   (vis||[]).forEach(row=>{
     const m = acha(row.memberName); if(!m) return;
     const dia = diaISO(row.dia); if(!dia || !dia.startsWith(mes)) return;
-    if(!visitasMes.has(m.id)) visitasMes.set(m.id,{dias:new Set(),linhas:[]});
+    if(!visitasMes.has(m.id)) visitasMes.set(m.id,{dias:new Set(),linhas:[],ultimo:''});
     const g = visitasMes.get(m.id);
     g.dias.add(dia);
     g.linhas.push({...row, dia});
+    const t = normTime(row.time);
+    if(t > g.ultimo) g.ultimo = t;
   });
 
   const resumoPlano = (v,tipo)=>{
@@ -1644,16 +1648,21 @@ function aplicarDados(onb, plan, vis){
     m.planoFabrica = f  ? resumoPlano(f,'fabrica')  : null;
     m.planoVisita  = vi ? resumoPlano(vi,'visitas') : null;
 
-    // um check-in feito hoje (fábrica/home/férias) é mais atual do que um plano
-    // e manda sempre sobre ele — só planos de dias sem check-in é que mandam.
-    const registouHoje = isToday(m.lastUpdate);
+    // manda sempre o registo mais recente — seja um check-in (fábrica/home/férias)
+    // ou a submissão de um plano (fábrica/viagem/visita), a comparar pela hora real.
+    const candidatos = [];
+    if(m.lastUpdate) candidatos.push({tempo:m.lastUpdate, tipo:'onboarding'});
+    if(f)  candidatos.push({tempo:f.ultimo,  tipo:'fabrica'});
+    if(vi) candidatos.push({tempo:vi.ultimo, tipo:'visitas'});
+    if(v)  candidatos.push({tempo:v.ultimo,  tipo:'viagem'});
+    const vencedor = candidatos.reduce((a,b)=>(!a||b.tempo>a.tempo)?b:a, null);
 
-    if(f && f.dias.has(hoje) && !registouHoje){       // hoje é um dia planeado na fábrica
+    if(vencedor?.tipo==='fabrica'){
       m.plano = m.planoFabrica;
       m.status = 'fabrica';
-      m.obs = (f.linhas.find(l=>l.dia===hoje)||f.linhas[0]).obs || 'Presença planeada na fábrica';
+      m.obs = (f.linhas.find(l=>l.dia===hoje)||f.linhas[f.linhas.length-1]).obs || 'Presença planeada na fábrica';
     }
-    if(vi && vi.dias.has(hoje) && !registouHoje){     // hoje é um dia de visita planeada
+    if(vencedor?.tipo==='visitas'){
       const p = m.planoVisita;
       const linha = vi.linhas.find(l=>l.dia===hoje) || p.linha;
       m.plano = p;
@@ -1661,7 +1670,7 @@ function aplicarDados(onb, plan, vis){
       m.obs = [linha.visita, linha.pais].filter(Boolean).join(' · ') || 'Visita planeada';
       if(linha.time) m.lastUpdate = normTime(linha.time);
     }
-    if(v && v.dias.has(hoje) && !registouHoje){       // hoje é um dia de viagem planeada
+    if(vencedor?.tipo==='viagem'){
       const p = resumoPlano(v,'viagem');
       const linha = v.linhas.find(l=>l.dia===hoje) || p.linha;
       m.plano = p;
