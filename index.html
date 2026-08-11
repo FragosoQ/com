@@ -1682,11 +1682,12 @@ function aplicarDados(onb, plan, vis){
     m.planoVisita  = vi ? resumoPlano(vi,'visitas') : null;
 
     // manda sempre o registo mais recente — seja um check-in (fábrica/home/férias)
-    // ou a submissão de um plano (fábrica/viagem/visita/férias), a comparar pela hora real.
+    // ou a submissão de um plano (fábrica/viagem/férias), a comparar pela hora real.
+    // "Visitas inversas" fica de fora desta disputa: nunca substitui o status
+    // principal, só duplica o card (ver filtro de listagem no render).
     const candidatos = [];
     if(m.lastUpdate) candidatos.push({tempo:m.lastUpdate, tipo:'onboarding'});
     if(f)  candidatos.push({tempo:f.ultimo,  tipo:'fabrica'});
-    if(vi) candidatos.push({tempo:vi.ultimo, tipo:'visitas'});
     if(v)  candidatos.push({tempo:v.ultimo,  tipo:'viagem'});
     if(fe) candidatos.push({tempo:fe.ultimo, tipo:'ferias'});
     const vencedor = candidatos.reduce((a,b)=>(!a||b.tempo>a.tempo)?b:a, null);
@@ -1695,14 +1696,6 @@ function aplicarDados(onb, plan, vis){
       m.plano = m.planoFabrica;
       m.status = 'fabrica';
       m.obs = (f.linhas.find(l=>l.dia===hoje)||f.linhas[f.linhas.length-1]).obs || 'Presença planeada na fábrica';
-    }
-    if(vencedor?.tipo==='visitas'){
-      const p = m.planoVisita;
-      const linha = vi.linhas.find(l=>l.dia===hoje) || p.linha;
-      m.plano = p;
-      m.status = 'visitas';
-      m.obs = [linha.visita, linha.pais].filter(Boolean).join(' · ') || 'Visita planeada';
-      if(linha.time) m.lastUpdate = normTime(linha.time);
     }
     if(vencedor?.tipo==='viagem'){
       const p = resumoPlano(v,'viagem');
