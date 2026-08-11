@@ -118,6 +118,7 @@ html.tv body{
 
 .rail{display:flex;flex-direction:column;gap:1.2rem;min-height:0}
 .tile{background:var(--surface);border-radius:1.6rem;overflow:hidden;display:flex;flex-direction:column;min-height:0;box-shadow:var(--shadow)}
+.tile:has(#tvmap){justify-content:center}
 #tvmap{flex:1;min-height:0;background:var(--map-bg)}
 .leaflet-container{background:var(--map-bg);font-family:inherit}
 .leaflet-tile{filter:var(--tile)}
