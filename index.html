@@ -1557,6 +1557,16 @@ async function sincronizar(){
   return true;
 }
 
+/* A folha devolve as horas ora como "yyyy-MM-dd HH:mm" ora como Date.toString()
+   (ex.: "Tue Aug 11 2026 11:27:00 GMT+0100 ..."). Normaliza para o primeiro formato. */
+function normTime(v){
+  const t=String(v||'').trim();
+  if(/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}/.test(t)) return t.slice(0,16).replace('T',' ');
+  const d=new Date(t);
+  if(isNaN(d)) return t;
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
 function aplicarDados(onb, plan, vis){
   const norm = t=>String(t||'').trim().toLowerCase();
   const acha = nome=>members.find(m=>norm(m.name)===norm(nome))
@@ -1572,9 +1582,10 @@ function aplicarDados(onb, plan, vis){
     const m = acha(row.memberName); if(!m) return;
     const k = chaveLocal(row.statusLabel);
     if(k!=='fabrica' && k!=='ferias' && k!=='home') return;   // viagem e visitas vêm do planeamento
-    saco(m.id)[k].add(String(row.time).split(' ')[0]);
+    const t = normTime(row.time);
+    saco(m.id)[k].add(t.split(' ')[0]);
     m.status = k;
-    m.lastUpdate = row.time;
+    m.lastUpdate = t;
     m.obs = row.obs || STATUS[k].label;
     const sub = (row.subName && row.subName!=='-') ? acha(row.subName) : null;
     m.subId = sub ? sub.id : null;
@@ -1633,24 +1644,30 @@ function aplicarDados(onb, plan, vis){
     m.planoFabrica = f  ? resumoPlano(f,'fabrica')  : null;
     m.planoVisita  = vi ? resumoPlano(vi,'visitas') : null;
 
-    if(f){                                   // dias planeados na fábrica
+    // um check-in feito hoje (fábrica/home/férias) é mais atual do que um plano
+    // e manda sempre sobre ele — só planos de dias sem check-in é que mandam.
+    const registouHoje = isToday(m.lastUpdate);
+
+    if(f && f.dias.has(hoje) && !registouHoje){       // hoje é um dia planeado na fábrica
       m.plano = m.planoFabrica;
       m.status = 'fabrica';
-      m.obs = f.linhas[0].obs || 'Presença planeada na fábrica';
+      m.obs = (f.linhas.find(l=>l.dia===hoje)||f.linhas[0]).obs || 'Presença planeada na fábrica';
     }
-    if(vi){                                  // visita manda sobre a fábrica
+    if(vi && vi.dias.has(hoje) && !registouHoje){     // hoje é um dia de visita planeada
       const p = m.planoVisita;
+      const linha = vi.linhas.find(l=>l.dia===hoje) || p.linha;
       m.plano = p;
       m.status = 'visitas';
-      m.obs = [p.linha.visita, p.linha.pais].filter(Boolean).join(' · ') || 'Visita planeada';
-      if(p.linha.time) m.lastUpdate = p.linha.time;
+      m.obs = [linha.visita, linha.pais].filter(Boolean).join(' · ') || 'Visita planeada';
+      if(linha.time) m.lastUpdate = normTime(linha.time);
     }
-    if(v){                                   // viagem manda sobre tudo
+    if(v && v.dias.has(hoje) && !registouHoje){       // hoje é um dia de viagem planeada
       const p = resumoPlano(v,'viagem');
+      const linha = v.linhas.find(l=>l.dia===hoje) || p.linha;
       m.plano = p;
       m.status = 'viagem';
-      m.obs = [p.cliente, p.pais].filter(Boolean).join(' · ') || p.linha.obs || 'Em viagem';
-      if(p.linha.time) m.lastUpdate = p.linha.time;
+      m.obs = [linha.cliente||p.cliente, linha.pais||p.pais].filter(Boolean).join(' · ') || linha.obs || 'Em viagem';
+      if(linha.time) m.lastUpdate = normTime(linha.time);
     }
   });
 
@@ -1658,7 +1675,7 @@ function aplicarDados(onb, plan, vis){
     .filter(row=>chaveLocal(row.statusLabel))
     .map(row=>({
       memberName:row.memberName, status:chaveLocal(row.statusLabel),
-      subName:row.subName||'-', time:row.time, lat:row.lat, lng:row.lng, obs:row.obs
+      subName:row.subName||'-', time:normTime(row.time), lat:row.lat, lng:row.lng, obs:row.obs
     }));
 }
 
