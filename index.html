@@ -1079,7 +1079,7 @@ function renderTV(){
       const second = sub ? `<b>Substituído por ${esc(shortName(sub.name))}</b>` : esc(card.obs||st.sub);
       const diasViagem = (card.metrics&&card.metrics.viagem)||0;   // o contador é sempre dias Em viagem
       const temClock = k==='viagem' && card.plano?.pais;
-      const semSb = k==='fabrica';
+      const semSb = k==='fabrica' || k==='home';
       return `<div class="p${temClock?' p-clock':''}${semSb?' p-compact':''}" style="--c:${st.c}" onclick="openPersonCal(${card.id})">
         <div class="ptop">
           ${avatarHtml(card)}
@@ -1091,7 +1091,7 @@ function renderTV(){
             </div>
           </div>
         </div>
-        ${k==='fabrica' ? '' : `<div class="sb">${(k==='viagem' || k==='visitas') && card.plano?.pais ? `<span class="flag" title="${esc(card.plano.pais)}">${bandeiraPais(card.plano.pais)}</span>` : ''}${second}</div>`}
+        ${semSb ? '' : `<div class="sb">${(k==='viagem' || k==='visitas') && card.plano?.pais ? `<span class="flag" title="${esc(card.plano.pais)}">${bandeiraPais(card.plano.pais)}</span>` : ''}${second}</div>`}
         <div class="pfoot">
           <div class="meter" title="Fábrica ${m.metrics.fabrica||0} · Home ${m.metrics.home||0} · Viagem ${m.metrics.viagem||0} · Férias ${m.metrics.ferias||0}">
             <i class="${k==='fabrica'?'act':''}" style="flex:${(m.metrics.fabrica||0)+.2};background:var(--green)"></i>
