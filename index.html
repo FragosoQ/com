@@ -1078,12 +1078,9 @@ function renderTV(){
     const rows = list.length ? list.map(m=>{
       const card = {...m,
         status:k,
-        plano:k==='fabrica' ? (m.planoFabrica||m.plano) :
-          k==='visitas' ? (m.planoVisita||m.plano) : m.plano,
-        obs:k==='fabrica' && m.planoFabrica ?
-          (m.planoFabrica.linha.obs||'Presença planeada na fábrica') :
-          k==='visitas' && m.planoVisita ?
-            ([m.planoVisita.linha.visita,m.planoVisita.linha.pais].filter(Boolean).join(' · ')||'Visita planeada') : m.obs
+        plano:k==='visitas' ? (m.planoVisita||m.plano) : m.plano,
+        obs:k==='visitas' && m.planoVisita ?
+          ([m.planoVisita.linha.visita,m.planoVisita.linha.pais].filter(Boolean).join(' · ')||'Visita planeada') : m.obs
       };
       const sub=m.subId?members.find(x=>x.id===m.subId):null;
       const second = sub ? `<b>Substituído por ${esc(shortName(sub.name))}</b>` : esc(card.obs||st.sub);
@@ -1310,12 +1307,9 @@ function renderPhoneBoard(){
     const rows=list.length?list.map(m=>{
       const card = {...m,
         status:k,
-        plano:k==='fabrica' ? (m.planoFabrica||m.plano) :
-          k==='visitas' ? (m.planoVisita||m.plano) : m.plano,
-        obs:k==='fabrica' && m.planoFabrica ?
-          (m.planoFabrica.linha.obs||'Presença planeada na fábrica') :
-          k==='visitas' && m.planoVisita ?
-            ([m.planoVisita.linha.visita,m.planoVisita.linha.pais].filter(Boolean).join(' · ')||'Visita planeada') : m.obs
+        plano:k==='visitas' ? (m.planoVisita||m.plano) : m.plano,
+        obs:k==='visitas' && m.planoVisita ?
+          ([m.planoVisita.linha.visita,m.planoVisita.linha.pais].filter(Boolean).join(' · ')||'Visita planeada') : m.obs
       };
       const sub=m.subId?members.find(x=>x.id===m.subId):null;
       const second=sub?`<b>Substituído por ${esc(shortName(sub.name))}</b>`:esc(card.obs||st.sub);
@@ -1355,7 +1349,7 @@ function showPhoneView(v){
   if(v==='equipa') renderPhoneBoard();
 }
 
-const ORDER_CHECKIN = ['fabrica','home','ferias'];   // viagem e visitas entram pelo planeamento
+const ORDER_CHECKIN = ['fabrica','home','viagem','ferias'];   // visitas inversas entram só pelo planeamento
 
 function buildPicker(){
   document.getElementById('picker').innerHTML = ORDER_CHECKIN.map(k=>{
@@ -1614,16 +1608,18 @@ function aplicarDados(onb, plan, vis){
   const acha = nome=>members.find(m=>norm(m.name)===norm(nome))
                   || members.find(m=>norm(m.name).startsWith(norm(nome).split(' ')[0]));
 
-  // ── onboarding: fábrica, home office e férias (dias distintos) ──
+  // ── onboarding: "Local de trabalho" é a ÚNICA coisa que decide o status
+  // (a coluna onde o card aparece). Fábrica, home, viagem e férias entram
+  // todos por aqui, um check-in por dia.
   const balde = new Map();
   const saco = id=>{
-    if(!balde.has(id)) balde.set(id,{fabrica:new Set(),home:new Set(),ferias:new Set()});
+    if(!balde.has(id)) balde.set(id,{fabrica:new Set(),home:new Set(),viagem:new Set(),ferias:new Set()});
     return balde.get(id);
   };
   onb.forEach(row=>{                                  // do mais antigo para o mais recente
     const m = acha(row.memberName); if(!m) return;
     const k = chaveLocal(row.statusLabel);
-    if(k!=='fabrica' && k!=='ferias' && k!=='home') return;   // viagem e visitas vêm do planeamento
+    if(k!=='fabrica' && k!=='home' && k!=='viagem' && k!=='ferias') return;   // visitas inversas vêm só do planeamento
     const t = normTime(row.time);
     saco(m.id)[k].add(t.split(' ')[0]);
     m.status = k;
@@ -1635,7 +1631,8 @@ function aplicarDados(onb, plan, vis){
     if(!isNaN(la)&&!isNaN(ln)){ m.lat=la; m.lng=ln; }
   });
 
-  // ── planning: dias de viagem do mês corrente + quem está fora hoje ──
+  // ── planeamento: só informação (visível no calendário pessoal, ao
+  // clicar no card) — nunca decide a coluna onde alguém aparece. ──
   const hoje = isoHoje(), mes = hoje.slice(0,7);
   const viagemMes = new Map();     // id -> {dias:Set, linhas:[]}
   const fabricaMes = new Map();
@@ -1645,24 +1642,20 @@ function aplicarDados(onb, plan, vis){
     const dia = diaISO(row.dia); if(!dia || !dia.startsWith(mes)) return;
     const alvo = ehFabrica(row) ? fabricaMes : (ehViagem(row) ? viagemMes : (ehFerias(row) ? feriasMes : null));
     if(!alvo) return;
-    if(!alvo.has(m.id)) alvo.set(m.id,{dias:new Set(),linhas:[],ultimo:''});
+    if(!alvo.has(m.id)) alvo.set(m.id,{dias:new Set(),linhas:[]});
     const v = alvo.get(m.id);
     v.dias.add(dia);
     v.linhas.push({...row, dia});
-    const t = normTime(row.time);
-    if(t > v.ultimo) v.ultimo = t;     // hora em que este plano foi submetido
   });
 
   const visitasMes = new Map();
   (vis||[]).forEach(row=>{
     const m = acha(row.memberName); if(!m) return;
     const dia = diaISO(row.dia); if(!dia || !dia.startsWith(mes)) return;
-    if(!visitasMes.has(m.id)) visitasMes.set(m.id,{dias:new Set(),linhas:[],ultimo:''});
+    if(!visitasMes.has(m.id)) visitasMes.set(m.id,{dias:new Set(),linhas:[]});
     const g = visitasMes.get(m.id);
     g.dias.add(dia);
     g.linhas.push({...row, dia});
-    const t = normTime(row.time);
-    if(t > g.ultimo) g.ultimo = t;
   });
 
   const resumoPlano = (v,tipo)=>{
@@ -1676,56 +1669,31 @@ function aplicarDados(onb, plan, vis){
 
   members.forEach(m=>{
     const b = balde.get(m.id);
-    const v = viagemMes.get(m.id);
     m.metrics = {
       fabrica: b?b.fabrica.size:0,
       home:    b?b.home.size:0,
+      viagem:  b?b.viagem.size:0,
       ferias:  b?b.ferias.size:0,
-      viagem:  v?v.dias.size:0,
       visitas: visitasMes.get(m.id)?visitasMes.get(m.id).dias.size:0
     };
 
     const f  = fabricaMes.get(m.id);
-    const vi = visitasMes.get(m.id);
+    const v  = viagemMes.get(m.id);
     const fe = feriasMes.get(m.id);
-    m.plano = null;
+    const vi = visitasMes.get(m.id);
     m.planoFabrica = f  ? resumoPlano(f,'fabrica')  : null;
+    m.planoViagem  = v  ? resumoPlano(v,'viagem')   : null;
+    m.planoFerias  = fe ? resumoPlano(fe,'ferias')  : null;
     m.planoVisita  = vi ? resumoPlano(vi,'visitas') : null;
 
-    // manda sempre o registo mais recente — seja um check-in (fábrica/home/férias)
-    // ou a submissão de um plano (fábrica/viagem/férias), a comparar pela hora real.
-    // "Visitas inversas" fica de fora desta disputa: nunca substitui o status
-    // principal, só duplica o card (ver filtro de listagem no render).
-    const candidatos = [];
-    if(m.lastUpdate) candidatos.push({tempo:m.lastUpdate, tipo:'onboarding'});
-    if(f)  candidatos.push({tempo:f.ultimo,  tipo:'fabrica'});
-    if(v)  candidatos.push({tempo:v.ultimo,  tipo:'viagem'});
-    if(fe) candidatos.push({tempo:fe.ultimo, tipo:'ferias'});
-    const vencedor = candidatos.reduce((a,b)=>(!a||b.tempo>a.tempo)?b:a, null);
-
-    if(vencedor?.tipo==='fabrica'){
-      m.plano = m.planoFabrica;
-      m.status = 'fabrica';
-      m.obs = (f.linhas.find(l=>l.dia===hoje)||f.linhas[f.linhas.length-1]).obs || 'Presença planeada na fábrica';
-    }
-    if(vencedor?.tipo==='viagem'){
-      const p = resumoPlano(v,'viagem');
-      const linha = v.linhas.find(l=>l.dia===hoje) || p.linha;
-      m.plano = p;
-      m.status = 'viagem';
-      m.obs = [linha.cliente||p.cliente, linha.pais||p.pais].filter(Boolean).join(' · ') || linha.obs || 'Em viagem';
-      if(linha.time) m.lastUpdate = normTime(linha.time);
-    }
-    if(vencedor?.tipo==='ferias'){
-      const p = resumoPlano(fe,'ferias');
-      const linha = fe.linhas.find(l=>l.dia===hoje) || p.linha;
-      m.plano = p;
-      m.status = 'ferias';
-      m.obs = linha.obs || 'De férias';
-      const sub = (linha.subName && linha.subName!=='-') ? acha(linha.subName) : null;
-      m.subId = sub ? sub.id : null;
-      if(linha.time) m.lastUpdate = normTime(linha.time);
-    }
+    // só enriquece o card (bandeira/relógio/datas) quando o check-in de
+    // hoje já é do mesmo tipo do plano E o plano cobre o dia de hoje —
+    // nunca é isto que decide o status.
+    const planoDeHoje = m.status==='fabrica' ? m.planoFabrica
+                       : m.status==='viagem' ? m.planoViagem
+                       : m.status==='ferias' ? m.planoFerias
+                       : null;
+    m.plano = (planoDeHoje && planoDeHoje.dias.includes(hoje)) ? planoDeHoje : null;
   });
 
   logs = onb.slice().reverse()
