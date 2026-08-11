@@ -112,7 +112,6 @@ html.tv body{
 .p.p-clock{height:16.4rem;flex:0 1 16.4rem;min-height:2.8rem}
 .p.p-clock .ptop{align-items:flex-start}
 .p.p-clock .av{margin-top:.2rem}
-.p.p-compact{height:11.6rem;flex:0 1 11.6rem;min-height:2.6rem}
 .p .tz-clocks{
   width:clamp(9rem,32cqw,17rem);display:grid;grid-template-columns:1fr;gap:.45rem;
   flex:none;height:4.6rem;min-width:0
@@ -1080,8 +1079,7 @@ function renderTV(){
       const diasViagem = (card.metrics&&card.metrics.viagem)||0;   // o contador é sempre dias Em viagem
       const temClock = k==='viagem' && card.plano?.pais;
       const semSb = k==='fabrica' || k==='home';
-      const compacto = k==='fabrica';
-      return `<div class="p${temClock?' p-clock':''}${compacto?' p-compact':''}" style="--c:${st.c}" onclick="openPersonCal(${card.id})">
+      return `<div class="p${temClock?' p-clock':''}" style="--c:${st.c}" onclick="openPersonCal(${card.id})">
         <div class="ptop">
           ${avatarHtml(card)}
           <div class="m">
