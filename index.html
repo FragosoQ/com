@@ -1172,6 +1172,7 @@ function drawMap(id){
   if(!box) return;
   if(typeof L==='undefined'){ box.innerHTML='<div style="height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:1.3rem;padding:16px;text-align:center">Mapa indisponível</div>'; return; }
   const tv = (id==='tvmap');
+  const soViagem = tv || id==='ph-map';    // mapa de resumo (TV e telemóvel): só mostra quem está em viagem
   if(tv) L.Browser.any3d = false;          // mapa da TV: posições inteiras, sem junções à vista
   if(!maps[id]){
     maps[id]=L.map(id, tv
@@ -1184,7 +1185,7 @@ function drawMap(id){
   const m0=maps[id];
   (markers[id]||[]).forEach(x=>m0.removeLayer(x)); markers[id]=[];
   const b=[];
-  const mapMembers = tv ? members.filter(m=>m.status==='viagem') : members;
+  const mapMembers = soViagem ? members.filter(m=>m.status==='viagem') : members;
   /* Quem está no mesmo país partilha a mesma coordenada: em vez de espalhar
      os pins em ecrã, mostramos um único ícone com uma label de contagem
      ao lado, para o mapa ficar limpo mesmo com muita gente no mesmo sítio. */
@@ -1192,7 +1193,7 @@ function drawMap(id){
   mapMembers.forEach(m=>{
     const pos = posicaoDe(m); if(!pos) return;
     // só agrupa quem está mesmo empilhado na coordenada do país
-    const pais = tv ? chavePais(m) : '';
+    const pais = soViagem ? chavePais(m) : '';
     pontos.push({m:m, pos:pos, pais:(pais && coordPais(pais)) ? pais : null});
   });
   const paises = new Map();
@@ -1261,14 +1262,24 @@ function renderPhoneBoard(){
 
   const groups=document.getElementById('ph-groups');
   if(groups) groups.innerHTML=ORDER.map(k=>{
-    const st=STATUS[k], list=members.filter(m=>m.status===k);
+    const st=STATUS[k], list=members.filter(m=>m.status===k ||
+      (k==='fabrica' && m.planoFabrica) || (k==='visitas' && m.planoVisita));
     const rows=list.length?list.map(m=>{
+      const card = {...m,
+        status:k,
+        plano:k==='fabrica' ? (m.planoFabrica||m.plano) :
+          k==='visitas' ? (m.planoVisita||m.plano) : m.plano,
+        obs:k==='fabrica' && m.planoFabrica ?
+          (m.planoFabrica.linha.obs||'Presença planeada na fábrica') :
+          k==='visitas' && m.planoVisita ?
+            ([m.planoVisita.linha.visita,m.planoVisita.linha.pais].filter(Boolean).join(' · ')||'Visita planeada') : m.obs
+      };
       const sub=m.subId?members.find(x=>x.id===m.subId):null;
-      const second=sub?`<b>Substituído por ${esc(shortName(sub.name))}</b>`:esc(m.obs||st.sub);
+      const second=sub?`<b>Substituído por ${esc(shortName(sub.name))}</b>`:esc(card.obs||st.sub);
       return `<div class="prow" onclick="openPersonCal(${m.id})">
         <div class="av" style="--c:${st.c}"><span class="ini">${initials(m.name)}</span>${m.photo?`<img src="${esc(m.photo)}" alt="" loading="lazy" onerror="this.remove()">`:''}</div>
         <div class="m"><div class="nm">${esc(shortName(m.name))}</div><div class="sb">${second}</div></div>
-        <div class="tm">${marcaTempo(m)}</div>
+        <div class="tm">${marcaTempo(card)}</div>
       </div>`;
     }).join(''):`<div class="pempty">Sem registos.</div>`;
     return `<section class="pgroup">
