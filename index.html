@@ -508,6 +508,7 @@ html.tv #pcal-sheet{zoom:clamp(1,.115vh,2.2)}
 #pcal-lista .linha{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:.5px solid var(--sep);font-size:13px}
 #pcal-lista .linha b{color:var(--text);font-weight:600;min-width:96px;font-variant-numeric:tabular-nums}
 #pcal-lista .linha span{color:var(--text-2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#pcal-lista .linha .sub{flex:none;font-size:12px;font-weight:500;color:var(--purple);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:38%}
 #pcal-vazio{padding:20px 4px;font-size:13px;color:var(--text-2);text-align:center}
 /* ── Planeamento: botões, modal e calendário ──────────── */
 .qr .qaction{flex-direction:column;gap:.8rem}
@@ -1036,26 +1037,10 @@ function equipaVazia(){
   }));
 }
 
+/** Os dados vêm sempre da folha: sem cache local, para nunca mostrar informação desatualizada. */
 function loadState(){
   members = equipaVazia();
-  try{
-    const guardado = JSON.parse(store.get('somengil_presenca_members_v7'));
-    if(Array.isArray(guardado)){
-      // a cache local só serve para não ficar o ecrã vazio enquanto a folha não responde
-      members.forEach(m=>{
-        const g = guardado.find(x=>x.id===m.id);
-        if(g){ m.status=g.status||null; m.subId=g.subId??null; m.metrics=g.metrics||m.metrics;
-               m.lat=g.lat??null; m.lng=g.lng??null; m.lastUpdate=g.lastUpdate||''; m.obs=g.obs||''; }
-      });
-    }
-  }catch(e){}
-  try{ logs = JSON.parse(store.get('somengil_presenca_history_v7')) || []; }catch(e){ logs = []; }
-  if(!Array.isArray(logs)) logs = [];
-}
-
-function saveState(){
-  store.set('somengil_presenca_members_v7',JSON.stringify(members));
-  store.set('somengil_presenca_history_v7',JSON.stringify(logs));
+  logs = [];
 }
 
 /* ═══ Utilitários ═══ */
@@ -1451,7 +1436,6 @@ function submitCheckin(e){
 
   enviarParaSheet({time:m.lastUpdate,memberName:m.name,statusLabel:STATUS[where].label,
                    subName:sub?sub.name:'-',lat:m.lat.toFixed(4),lng:m.lng.toFixed(4),obs:m.obs});
-  saveState();
 
   document.getElementById('done-title').textContent=`${STATUS[where].label}, ${shortName(m.name).split(' ')[0]}`;
   const dsub=document.getElementById('done-sub');
@@ -1608,7 +1592,6 @@ async function sincronizar(){
     console.log('visits:', visitas.length, 'linhas · exemplo:', visitas[0]);
   }
   aplicarDados(onb || [], planos, visitas);
-  saveState();
   if(MODE==='tv'){ renderTV(); drawMap('tvmap'); } else { renderPhoneBoard(); if(maps['ph-map']) drawMap('ph-map'); }
   if(document.getElementById('map-scrim').classList.contains('on')) renderTrips();
   return true;
@@ -2234,9 +2217,10 @@ function renderPersonCal(){
                : tipo==='visitas' ? ([r.visita,r.pais].filter(Boolean).join(' · ')||'Visita planeada')
                : tipo==='ferias'  ? (r.obs||'De férias')
                : (r.obs||'Na fábrica');
+    const sub = tipo==='ferias' && r.subName && r.subName!=='-' ? r.subName : '';
     const ult=blocos[blocos.length-1];
-    if(ult && ult.tipo===tipo && ult.desc===desc && seguinte(ult.fim)===d){ ult.fim=d; ult.n++; }
-    else blocos.push({tipo,desc,ini:d,fim:d,n:1});
+    if(ult && ult.tipo===tipo && ult.desc===desc && ult.sub===sub && seguinte(ult.fim)===d){ ult.fim=d; ult.n++; }
+    else blocos.push({tipo,desc,sub,ini:d,fim:d,n:1});
   });
 
   const corBloco = t=>t==='viagem'?'var(--orange)':(t==='visitas'?'var(--visit)':(t==='ferias'?'var(--purple)':'var(--green)'));
@@ -2244,6 +2228,7 @@ function renderPersonCal(){
     <div class="linha">
       <b style="color:${corBloco(b.tipo)}">${ddmm(b.ini)}${b.fim!==b.ini?` – ${ddmm(b.fim)}`:''}</b>
       <span>${esc(b.desc)}</span>
+      ${b.sub?`<span class="sub">Substituído por ${esc(shortName(b.sub))}</span>`:''}
     </div>`).join('') : `<div id="pcal-vazio">Sem planeamento neste mês.</div>`;
 }
 
