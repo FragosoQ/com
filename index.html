@@ -409,6 +409,18 @@ html.phone body{
   background:linear-gradient(90deg,transparent,var(--g-hi),transparent);pointer-events:none;
 }
 .p .av{box-shadow:0 0 0 .22rem var(--c),0 .5rem 1.2rem rgba(0,0,0,.3)}
+
+/* vidro próprio para "Na fábrica" e "Home office" */
+#col-fabrica .p,#col-home .p{
+  background:linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.02));
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 1.25rem 2.5rem rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.1);
+}
+#col-fabrica .p::after,#col-home .p::after{
+  left:0;right:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);
+}
+#col-fabrica .p .av,#col-home .p .av{background:rgba(255,255,255,.05)}
 .p .meter i{opacity:.32;transition:opacity .3s}
 .p .meter i.act{opacity:1;box-shadow:0 0 .7rem color-mix(in srgb,var(--c) 60%,transparent)}
 
