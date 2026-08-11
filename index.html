@@ -85,7 +85,7 @@ html.tv body{
 .tvbar .theme:hover{background:var(--fill-2);color:var(--text)}
 .tvbar .theme:active{transform:scale(.93)}
 
-.tvgrid{flex:1;min-height:0;display:grid;grid-template-columns:.9fr .9fr .9fr .9fr 1.55fr;gap:1.2rem}
+.tvgrid{flex:1;min-height:0;display:grid;grid-template-columns:.8fr .8fr .8fr .8fr .8fr 1.5fr;gap:1.2rem}
 
 .col{background:var(--surface);border-radius:1.6rem;display:flex;flex-direction:column;min-height:0;border-top:.35rem solid var(--c);box-shadow:var(--shadow)}
 .col-head{display:flex;align-items:center;gap:.9rem;padding:1.2rem 1.3rem 1rem}
@@ -684,6 +684,7 @@ input[type=text]::placeholder{color:var(--text-3)}
 
   <div class="tvgrid">
     <div class="col" id="col-fabrica"></div>
+    <div class="col" id="col-home"></div>
     <div class="col" id="col-viagem"></div>
     <div class="col" id="col-ferias"></div>
     <div class="col" id="col-visitas"></div>
@@ -945,12 +946,12 @@ const REFRESH_MS = 60000;   // com que frequência a TV se atualiza
 
 const STATUS = {
   fabrica:{label:'Na fábrica', short:'Fábrica',    sub:'Instalações Somengil', icon:'i-factory', c:'var(--green)'},
-  home:   {label:'Home office',short:'Home office',sub:'Trabalho remoto',      icon:'i-home',    c:'var(--blue)'},   // legado: já não tem coluna
+  home:   {label:'Home office',short:'Home office',sub:'Trabalho remoto',      icon:'i-home',    c:'var(--blue)'},
   visitas:{label:'Visitas planeadas',short:'Visitas',sub:'Visita planeada',    icon:'i-visit',   c:'var(--visit)'},
   viagem: {label:'Em viagem',  short:'Em viagem',  sub:'Visita a cliente',     icon:'i-plane',   c:'var(--orange)'},
   ferias: {label:'De férias',  short:'De férias',  sub:'Ausente',              icon:'i-sun',     c:'var(--purple)'}
 };
-const ORDER = ['fabrica','viagem','ferias','visitas'];   // ordem em que as colunas aparecem
+const ORDER = ['fabrica','home','viagem','ferias','visitas'];   // ordem em que as colunas aparecem
 
 /* ── Equipa: só nome e foto. Estado, dias e posição vêm todos da folha. ── */
 const EQUIPA = [
@@ -1312,7 +1313,7 @@ function showPhoneView(v){
   if(v==='equipa') renderPhoneBoard();
 }
 
-const ORDER_CHECKIN = ['fabrica','ferias'];   // viagem e visitas entram pelo planeamento
+const ORDER_CHECKIN = ['fabrica','home','ferias'];   // viagem e visitas entram pelo planeamento
 
 function buildPicker(){
   document.getElementById('picker').innerHTML = ORDER_CHECKIN.map(k=>{
@@ -1570,7 +1571,7 @@ function aplicarDados(onb, plan, vis){
   onb.forEach(row=>{                                  // do mais antigo para o mais recente
     const m = acha(row.memberName); if(!m) return;
     const k = chaveLocal(row.statusLabel);
-    if(k!=='fabrica' && k!=='ferias') return;          // viagem e visitas vêm do planeamento
+    if(k!=='fabrica' && k!=='ferias' && k!=='home') return;   // viagem e visitas vêm do planeamento
     saco(m.id)[k].add(String(row.time).split(' ')[0]);
     m.status = k;
     m.lastUpdate = row.time;
