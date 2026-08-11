@@ -1075,7 +1075,7 @@ function renderTV(){
     document.getElementById('col-'+k).innerHTML = `
       <div class="col-head">
         <div class="badge"><svg class="ico" style="font-size:1.5rem"><use href="#${st.icon}"/></svg></div>
-        <h2>${st.label}</h2><span class="n">${list.length}</span>
+        <h2>${k==='visitas'?'Visitas inversas':st.label}</h2><span class="n">${list.length}</span>
       </div>
       <div class="col-body">${rows}</div>`;
   });
@@ -1745,7 +1745,7 @@ async function submitPlan(){
 
   const cfg = MODOS[planTipo];
   if(!id)                          return planAlerta('Escolha o comercial.');
-  if(cfg.destino && !cliente)      return planAlerta(`Indique ${planTipo==='visitas'?'a visita':'o cliente'}.`);
+  if(planTipo==='visitas' && !cliente) return planAlerta('Indique a visita.');
   if(cfg.destino && !pais)         return planAlerta('Indique o país.');
   if(!planSel.size)                return planAlerta('Selecione pelo menos um dia no calendário.');
 
